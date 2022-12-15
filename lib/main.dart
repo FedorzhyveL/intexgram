@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:intexgram/Screens/authorization.dart';
+import 'package:intexgram/Screens/main_screen.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {

@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'package:intexgram/Screens/main_screen.dart';
 
 class AuthorizationPage extends StatefulWidget {
   const AuthorizationPage({super.key});
@@ -88,16 +89,27 @@ class _AuthorizationPageState extends State<AuthorizationPage> {
                     alignment: Alignment.centerRight,
                     margin: EdgeInsets.only(right: 16),
                     child: TextButton(
-                        onPressed: () {}, child: Text('Forgot password?')),
+                      onPressed: () {},
+                      child: Text('Forgot password?'),
+                    ),
                   ),
                   MaterialButton(
-                      padding: EdgeInsets.all(5),
-                      color: Colors.blue[300],
-                      child: Text(
-                        'Log in',
-                        style: TextStyle(fontSize: 25, color: Colors.white),
-                      ),
-                      onPressed: () {})
+                    padding: EdgeInsets.all(5),
+                    color: Colors.blue[300],
+                    child: Text(
+                      'Log in',
+                      style: TextStyle(fontSize: 25, color: Colors.white),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return MainScreen();
+                          },
+                        ),
+                      );
+                    },
+                  )
                 ],
               ),
             ),
