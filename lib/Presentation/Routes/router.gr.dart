@@ -14,9 +14,9 @@
 import 'package:auto_route/auto_route.dart' as _i8;
 import 'package:flutter/material.dart' as _i9;
 import 'package:intexgram/Presentation/Routes/auth_guard.dart' as _i10;
-import 'package:intexgram/Presentation/Screens/authorization/sign_in/screen/sign_in.dart'
+import 'package:intexgram/Presentation/Screens/authorization/sign_in/sign_in.dart'
     as _i2;
-import 'package:intexgram/Presentation/Screens/authorization/sign_up/screens/sign_up.dart'
+import 'package:intexgram/Presentation/Screens/authorization/sign_up/sign_up.dart'
     as _i3;
 import 'package:intexgram/Presentation/Screens/main_screen/main_screen.dart'
     as _i1;

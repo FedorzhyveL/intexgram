@@ -1,12 +1,12 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:intexgram/Presentation/Screens/main_page/main_page.dart';
 import 'package:intexgram/Presentation/Screens/main_screen/main_screen.dart';
-import 'package:intexgram/Presentation/Screens/pages/pages/search_page.dart';
+import 'package:intexgram/Presentation/Screens/notifications_page.dart';
+import 'package:intexgram/Presentation/Screens/profile_page.dart';
+import 'package:intexgram/Presentation/Screens/search_page.dart';
 
-import '../Screens/authorization/sign_in/screen/sign_in.dart';
-import '../Screens/authorization/sign_up/screens/sign_up.dart';
-import '../Screens/pages/pages/main_page.dart';
-import '../Screens/pages/pages/notifications_page.dart';
-import '../Screens/pages/pages/profile_page.dart';
+import '../Screens/authorization/sign_in/sign_in.dart';
+import '../Screens/authorization/sign_up/sign_up.dart';
 import 'auth_guard.dart';
 
 @AdaptiveAutoRouter(
