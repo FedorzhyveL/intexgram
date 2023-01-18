@@ -46,63 +46,75 @@ class _HomePageState extends State<HomePage> {
       create: (context) => bloc..add(const LoadUser()),
       child: BlocBuilder<HomePageBloc, HomePageState>(
         builder: (context, state) {
-          if (state is Updated) bloc.add(Update(state.posts, state.following));
-          if (state is Ready) bloc.add(LoadGallery(state.user));
-          return Scaffold(
-            appBar: AppBar(
-              backgroundColor: Palette.appBarColor,
-              title: DropdownButtonHideUnderline(
-                child: DropdownButton(
-                  icon: const Visibility(
-                    //visible: false,
-                    child: Icon(Icons.arrow_drop_down),
-                  ),
-                  value: _dropDownValue,
-                  items: _dropDownValues
-                      .map(
-                        (String item) => DropdownMenuItem(
-                          value: item,
-                          child: TextButton(
-                            onPressed: () {},
-                            child: Text(
-                              item,
-                              style: TextStyles.appBarText.copyWith(
-                                fontSize: 20,
-                              ),
-                            ),
-                          ),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (String? value) {
-                    if (value is String) {}
-                  },
-                ),
-              ),
-              actions: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.mail_outline,
-                    color: Palette.appBarIconColor,
-                  ),
-                  onPressed: () {
-                    FirebaseAuth.instance.signOut();
-                    serverLocator<FlutterRouter>()
-                        .replace(const SignInPageRoute());
-                  },
-                ),
-              ],
-            ),
-            body: RefreshIndicator(
-                onRefresh: () {
-                  final refreshBloc = bloc.stream.first;
-                  bloc.add(const LoadUser());
-                  return refreshBloc;
-                },
-                child: mainPageBody(state)),
+          return state.when(
+            initial: (() => content(state)),
+            ready: ((user) {
+              bloc.add(LoadGallery(user));
+              return content(state);
+            }),
+            galleryReady: ((posts, following) => content(state)),
+            updated: ((posts, following) {
+              bloc.add(Update(posts, following));
+              return content(state);
+            }),
           );
         },
       ),
+    );
+  }
+
+  Widget content(HomePageState state) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Palette.appBarColor,
+        title: DropdownButtonHideUnderline(
+          child: DropdownButton(
+            icon: const Visibility(
+              //visible: false,
+              child: Icon(Icons.arrow_drop_down),
+            ),
+            value: _dropDownValue,
+            items: _dropDownValues
+                .map(
+                  (String item) => DropdownMenuItem(
+                    value: item,
+                    child: TextButton(
+                      onPressed: () {},
+                      child: Text(
+                        item,
+                        style: TextStyles.appBarText.copyWith(
+                          fontSize: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+                .toList(),
+            onChanged: (String? value) {
+              if (value is String) {}
+            },
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.mail_outline,
+              color: Palette.appBarIconColor,
+            ),
+            onPressed: () {
+              FirebaseAuth.instance.signOut();
+              serverLocator<FlutterRouter>().replace(const SignInPageRoute());
+            },
+          ),
+        ],
+      ),
+      body: RefreshIndicator(
+          onRefresh: () {
+            final refreshBloc = bloc.stream.first;
+            bloc.add(const LoadUser());
+            return refreshBloc;
+          },
+          child: mainPageBody(state)),
     );
   }
 
