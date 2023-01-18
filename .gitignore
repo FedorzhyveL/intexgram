@@ -46,3 +46,32 @@ app.*.map.json
 
 #custom rules
 .D:\Flutter projects\intexgram\lib\Presentation\Routes\router.gr.dart
+lib/Presentation/Screens/add_photo_screen/bloc/add_photo_event.freezed.dart
+lib/Presentation/Screens/add_photo_screen/bloc/add_photo_state.freezed.dart
+lib/Presentation/Screens/add_post_page/bloc/add_post_event.freezed.dart
+lib/Presentation/Screens/add_post_page/bloc/add_post_state.freezed.dart
+lib/Presentation/Routes/router.gr.dart
+lib/Presentation/Screens/authorization/sign_in/bloc/sign_in_event.freezed.dart
+lib/Presentation/Screens/authorization/sign_in/bloc/sign_in_state.freezed.dart
+lib/Presentation/Screens/authorization/sign_up/bloc/sign_up_event.freezed.dart
+lib/Presentation/Screens/authorization/sign_up/bloc/sign_up_state.freezed.dart
+lib/Presentation/Screens/comments_page/bloc/comments_page_event.freezed.dart
+lib/Presentation/Screens/comments_page/bloc/comments_page_state.freezed.dart
+lib/Presentation/Screens/favorites_screen/bloc/favorites_event.freezed.dart
+lib/Presentation/Screens/favorites_screen/bloc/favorites_state.freezed.dart
+lib/Presentation/Screens/home_page/bloc/home_page_event.freezed.dart
+lib/Presentation/Screens/home_page/bloc/home_page_state.freezed.dart
+lib/Presentation/Screens/list_of_users/bloc/list_of_users_event.freezed.dart
+lib/Presentation/Screens/list_of_users/bloc/list_of_users_state.freezed.dart
+lib/Presentation/Screens/main_screen/bloc/main_screen_event.freezed.dart
+lib/Presentation/Screens/main_screen/bloc/main_screen_state.freezed.dart
+lib/Presentation/Screens/profile_information/bloc/profile_information_event.freezed.dart
+lib/Presentation/Screens/profile_information/bloc/profile_information_state.freezed.dart
+lib/Presentation/Screens/profile_page/bloc/profile_page_event.freezed.dart
+lib/Presentation/Screens/profile_page/bloc/profile_page_state.freezed.dart
+lib/Presentation/Screens/search_screen/bloc/search_page_event.freezed.dart
+lib/Presentation/Screens/search_screen/bloc/search_page_state.freezed.dart
+lib/Presentation/Screens/user_list_of_posts/bloc/user_list_of_posts_event.freezed.dart
+lib/Presentation/Screens/user_list_of_posts/bloc/user_list_of_posts_state.freezed.dart
+macos/Flutter/GeneratedPluginRegistrant.swift
+pubspec.lock
