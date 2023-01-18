@@ -75,10 +75,11 @@ class CommentsPageBloc extends Bloc<CommentsPageEvent, CommentsPageState> {
     late PersonEntity user;
     userOrFailure.fold((l) => {}, ((result) => user = result));
     emit(
-      DescriptionLoaded(
+      Loaded(
         post: post,
         comments: comments,
         currentUser: user,
+        allowPublish: false,
       ),
     );
   }

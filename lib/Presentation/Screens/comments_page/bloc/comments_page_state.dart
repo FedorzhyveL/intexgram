@@ -11,12 +11,6 @@ class CommentsPageState with _$CommentsPageState {
     required PostEntity post,
   }) = Initial;
 
-  const factory CommentsPageState.descriptionLoaded({
-    required PostEntity post,
-    required List<CommentEntity> comments,
-    required PersonEntity currentUser,
-  }) = DescriptionLoaded;
-
   const factory CommentsPageState.loaded({
     required PostEntity post,
     required List<CommentEntity> comments,
