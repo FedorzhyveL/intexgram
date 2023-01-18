@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intexgram/Presentation/Screens/authorization/Widgets/form_text_field.dart';
+import 'package:intexgram/Presentation/Routes/router.gr.dart';
+import 'package:intexgram/Presentation/Screens/authorization/sign_in/bloc/sign_in_bloc.dart';
+import 'package:intexgram/Presentation/Screens/widgets/form_text_field.dart';
 import 'package:intexgram/Presentation/Screens/authorization/Widgets/or_divider.dart';
 import 'package:intexgram/Presentation/Screens/authorization/Widgets/sign_button.dart';
-import 'package:intexgram/Presentation/Screens/authorization/sign_in/cubit/sign_in_cubit.dart';
+import 'package:intexgram/Presentation/theme/palette.dart';
+import 'package:intexgram/Presentation/theme/text_styles.dart';
+import 'package:intexgram/locator_service.dart';
+
+import 'bloc/sign_in_event.dart';
+import 'bloc/sign_in_state.dart';
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
@@ -17,10 +24,10 @@ class _SignInPageState extends State<SignInPage> {
   var emailController = TextEditingController();
   var passwordController = TextEditingController();
 
-  late final SignInCubit bloc;
+  late final SignInBloc bloc;
   @override
   void initState() {
-    bloc = SignInCubit();
+    bloc = SignInBloc();
     super.initState();
   }
 
@@ -28,8 +35,14 @@ class _SignInPageState extends State<SignInPage> {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => bloc,
-      child: BlocBuilder<SignInCubit, SignInState>(
+      child: BlocBuilder<SignInBloc, SignInState>(
         builder: (context, state) {
+          if (state is WrongEmail || state is WrongPassword) {
+            _formKey.currentState!.reset();
+          }
+          if (state is Succes) {
+            serverLocator<FlutterRouter>().replace(const MainScreenRoute());
+          }
           return Scaffold(
             resizeToAvoidBottomInset: false,
             body: Center(
@@ -50,11 +63,10 @@ class _SignInPageState extends State<SignInPage> {
   }
 
   Widget formLabel() {
-    return const Text(
+    return Text(
       "Intexgram",
-      style: TextStyle(
+      style: TextStyles.text.copyWith(
         fontStyle: FontStyle.italic,
-        fontSize: 20,
       ),
     );
   }
@@ -77,19 +89,29 @@ class _SignInPageState extends State<SignInPage> {
             margin: const EdgeInsets.only(right: 16),
             child: TextButton(
               onPressed: () {},
-              child: const Text('Forgot password?'),
+              child: Text(
+                'Forgot password?',
+                style: TextStyles.text.copyWith(
+                  color: Palette.signTextColor,
+                  fontSize: 15,
+                ),
+              ),
             ),
           ),
           MaterialButton(
             padding: const EdgeInsets.all(5),
-            color: Colors.blue[300],
+            color: Palette.signButtonColor,
             child: const Text(
               'Log in',
-              style: TextStyle(fontSize: 25, color: Colors.white),
+              style: TextStyles.signButtonText,
             ),
             onPressed: () {
-              bloc.signIn(
-                  emailController.text, passwordController.text, _formKey);
+              bloc.add(
+                SignIn(
+                  email: emailController.text,
+                  password: passwordController.text,
+                ),
+              );
             },
           ),
         ],
