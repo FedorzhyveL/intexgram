@@ -41,82 +41,84 @@ class _AddPostPageState extends State<AddPostPage> {
       create: (context) => bloc,
       child: BlocBuilder<AddPostBloc, AddPostState>(
         builder: (context, state) {
-          if (state is Loaded) {
-            serverLocator<FlutterRouter>()
-                .replaceAll([const MainScreenRoute()]);
-          }
-          return Scaffold(
-            appBar: AppBar(
-              backgroundColor: Palette.appBarColor,
-              automaticallyImplyLeading: false,
-              leading: IconButton(
-                icon: const Icon(
-                  Icons.arrow_back_rounded,
-                  color: Palette.appBarIconColor,
-                  size: 35,
-                ),
-                onPressed: () {
-                  serverLocator<FlutterRouter>().pop();
-                },
-              ),
-              title: const Text(
-                "New post",
-                style: TextStyles.appBarText,
-              ),
-              actions: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.task_alt_rounded,
-                    size: 35,
-                    color: Palette.appBarIconColor,
+          return state.when(
+            initial: ((photo) => content(state)),
+            loading: ((photo) => content(state)),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget content(AddPostState state) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Palette.appBarColor,
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_rounded,
+            color: Palette.appBarIconColor,
+            size: 35,
+          ),
+          onPressed: () {
+            serverLocator<FlutterRouter>().pop();
+          },
+        ),
+        title: const Text(
+          "New post",
+          style: TextStyles.appBarText,
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.task_alt_rounded,
+              size: 35,
+              color: Palette.appBarIconColor,
+            ),
+            onPressed: () {
+              if (state is Initial) {
+                bloc.add(
+                  AddPostToDb(
+                    photo: state.photo,
+                    description: descriptionController.text,
                   ),
-                  onPressed: () {
-                    if (state is Initial) {
-                      bloc.add(
-                        AddPostToDb(
-                          photo: state.photo,
-                          description: descriptionController.text,
-                        ),
-                      );
-                    }
-                  },
+                );
+              }
+            },
+          ),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                const CircleAvatar(
+                  backgroundImage: AssetImage('assets/photos/original.jpg'),
+                  radius: 30,
+                ),
+                Expanded(
+                  child: FormTextField(
+                    label: "Description",
+                    controller: descriptionController,
+                    maxLines: 100,
+                  ),
+                ),
+                SizedBox(
+                  width: 60,
+                  height: 60,
+                  child: FittedBox(
+                    clipBehavior: Clip.hardEdge,
+                    fit: BoxFit.cover,
+                    child: Image.file(widget.photo),
+                  ),
                 ),
               ],
             ),
-            body: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      const CircleAvatar(
-                        backgroundImage:
-                            AssetImage('assets/photos/original.jpg'),
-                        radius: 30,
-                      ),
-                      Expanded(
-                        child: FormTextField(
-                          label: "Description",
-                          controller: descriptionController,
-                          maxLines: 100,
-                        ),
-                      ),
-                      SizedBox(
-                        width: 60,
-                        height: 60,
-                        child: FittedBox(
-                          clipBehavior: Clip.hardEdge,
-                          fit: BoxFit.cover,
-                          child: Image.file(widget.photo),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }

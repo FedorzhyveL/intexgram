@@ -6,6 +6,8 @@ part 'add_post_event.freezed.dart';
 
 @freezed
 class AddPostEvent with _$AddPostEvent {
-  const factory AddPostEvent.addPostToDb(
-      {required File photo, required String description}) = AddPostToDb;
+  const factory AddPostEvent.addPostToDb({
+    required File photo,
+    required String description,
+  }) = AddPostToDb;
 }
