@@ -89,7 +89,8 @@ class CommentsPageBloc extends Bloc<CommentsPageEvent, CommentsPageState> {
     PersonEntity user,
     Emitter<CommentsPageState> emit,
   ) async {
-    List<CommentEntity> allComments = comments;
+    List<CommentEntity> allComments = [];
+    allComments.addAll(comments);
     final commentsOrFailure = await getComments(GetCommentsParams(post));
     commentsOrFailure.fold(
         (l) => null, (comments) => allComments.addAll(comments));
