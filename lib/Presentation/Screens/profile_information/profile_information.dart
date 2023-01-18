@@ -53,108 +53,116 @@ class _ProfileInformationState extends State<ProfileInformation> {
       create: (context) => bloc,
       child: BlocBuilder<ProfileInformationBloc, ProfileInformationState>(
         builder: (context, state) {
-          if (state is Exit) {
-            serverLocator<FlutterRouter>().pop(state.isChanged);
-          }
-          return Scaffold(
-            appBar: AppBar(
-              backgroundColor: Palette.appBarColor,
-              automaticallyImplyLeading: false,
-              leading: IconButton(
-                icon: const Icon(
-                  Icons.arrow_back_rounded,
-                  size: 30,
-                  color: Palette.appBarIconColor,
+          return state.when(
+            initial: (() => content(state, context)),
+            photoUpdated: ((photo) => content(state, context)),
+            exit: ((isChanged) {
+              serverLocator<FlutterRouter>().pop(isChanged);
+              return content(state, context);
+            }),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget content(ProfileInformationState state, BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Palette.appBarColor,
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_rounded,
+            size: 30,
+            color: Palette.appBarIconColor,
+          ),
+          onPressed: () {
+            serverLocator<FlutterRouter>().pop();
+          },
+        ),
+        title: Text(
+          "Input profile information",
+          style: TextStyles.appBarText.copyWith(fontSize: 20),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.task_alt_rounded,
+              size: 35,
+              color: Palette.appBarIconColor,
+            ),
+            onPressed: () {
+              bloc.add(
+                SubmitButtonPressed(
+                  nickNameController.text,
+                  userNameController.text,
+                  descriptionController.text,
+                  widget.user,
+                  state is PhotoUpdated ? state.photo : null,
                 ),
-                onPressed: () {
-                  serverLocator<FlutterRouter>().pop();
-                },
-              ),
-              title: Text(
-                "Input profile information",
-                style: TextStyles.appBarText.copyWith(fontSize: 20),
-              ),
-              actions: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.task_alt_rounded,
-                    size: 35,
-                    color: Palette.appBarIconColor,
+              );
+            },
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Center(
+            child: Column(
+              children: [
+                CircleAvatar(
+                  backgroundImage: state is PhotoUpdated
+                      ? Image.file(state.photo).image
+                      : CachedNetworkImageProvider(
+                          widget.user.profilePicturePath),
+                  radius: 30,
+                ),
+                TextButton(
+                  child: const Text(
+                    'Add or edit profile photo',
+                    style: TextStyles.text,
                   ),
-                  onPressed: () {
-                    bloc.add(
-                      SubmitButtonPressed(
-                        nickNameController.text,
-                        userNameController.text,
-                        descriptionController.text,
-                        widget.user,
-                        state is PhotoUpdated ? state.photo : null,
-                      ),
+                  onPressed: () async {
+                    await showModalBottomSheet<File?>(
+                      context: context,
+                      builder: (context) {
+                        return const GetPhotoWidget();
+                      },
+                    ).then(
+                      (value) {
+                        value == null
+                            ? serverLocator<FlutterRouter>().pop()
+                            : bloc.add(UpdatePhoto(value));
+                      },
                     );
                   },
                 ),
-              ],
-            ),
-            body: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Center(
+                Form(
+                  key: _formKey,
                   child: Column(
                     children: [
-                      CircleAvatar(
-                        backgroundImage: state is PhotoUpdated
-                            ? Image.file(state.photo).image
-                            : CachedNetworkImageProvider(
-                                widget.user.profilePicturePath),
-                        radius: 30,
+                      FormTextField(
+                        label: "Nick name",
+                        controller: nickNameController,
                       ),
-                      TextButton(
-                        child: const Text(
-                          'Add or edit profile photo',
-                          style: TextStyles.text,
-                        ),
-                        onPressed: () async {
-                          await showModalBottomSheet<File?>(
-                            context: context,
-                            builder: (context) {
-                              return const GetPhotoWidget();
-                            },
-                          ).then(
-                            (value) {
-                              value == null
-                                  ? serverLocator<FlutterRouter>().pop()
-                                  : bloc.add(UpdatePhoto(value));
-                            },
-                          );
-                        },
+                      FormTextField(
+                        label: "User name",
+                        controller: userNameController,
                       ),
-                      Form(
-                        key: _formKey,
-                        child: Column(
-                          children: [
-                            FormTextField(
-                              label: "Nick name",
-                              controller: nickNameController,
-                            ),
-                            FormTextField(
-                              label: "User name",
-                              controller: userNameController,
-                            ),
-                            FormTextField(
-                              label: "Description",
-                              controller: descriptionController,
-                              maxLines: 5,
-                            ),
-                          ],
-                        ),
+                      FormTextField(
+                        label: "Description",
+                        controller: descriptionController,
+                        maxLines: 5,
                       ),
                     ],
                   ),
                 ),
-              ),
+              ],
             ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }
