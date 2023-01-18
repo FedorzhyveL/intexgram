@@ -39,11 +39,7 @@ abstract class PersonRepository {
     String email,
   );
 
-  Future<Either<Failure, void>> deleteUserPhoto(
-    String userEmail,
-  );
-
-  Future<Either<Failure, void>> addPhotoToDb(
+  Future<Either<Failure, void>> changeUserPhoto(
     File photo,
   );
 

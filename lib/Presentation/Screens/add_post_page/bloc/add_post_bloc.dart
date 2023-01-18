@@ -4,7 +4,7 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:intexgram/Domain/usecases/person_use_cases/add_photo_to_db_use_case.dart';
+import 'package:intexgram/Domain/usecases/person_use_cases/change_photo_use_case.dart';
 import 'package:intexgram/Domain/usecases/post_use_cases/create_post_use_case.dart';
 import 'package:path/path.dart';
 
@@ -13,7 +13,7 @@ import 'add_post_state.dart';
 
 class AddPostBloc extends Bloc<AddPostEvent, AddPostState> {
   final CreatePostUseCase createPost;
-  final AddPhotoToDbUseCase addPhotoToDb;
+  final ChangePhotoUseCase addPhotoToDb;
   final File photo;
   AddPostBloc(
     this.createPost,
@@ -40,7 +40,7 @@ class AddPostBloc extends Bloc<AddPostEvent, AddPostState> {
   ) async {
     emit(Loading(photo));
     try {
-      await addPhotoToDb(AddPhotoToDbParams(photo: photo));
+      await addPhotoToDb(ChangePhotoParams(photo: photo));
       await createPost(
         CreatePostParams(
           imagePath: 'images/${basename(photo.path)}',

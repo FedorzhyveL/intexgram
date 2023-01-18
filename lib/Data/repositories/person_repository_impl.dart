@@ -135,24 +135,10 @@ class PersonRepositoryImpl implements PersonRepository {
   }
 
   @override
-  Future<Either<Failure, void>> deleteUserPhoto(String userEmail) async {
+  Future<Either<Failure, void>> changeUserPhoto(File photo) async {
     if (await networkInfo.isConnected) {
       try {
-        await personRemoteDataSource.deleteUserPhoto(userEmail);
-        return right(null);
-      } on ServerException {
-        return Left(ServerFailure());
-      }
-    } else {
-      return Left(ServerFailure());
-    }
-  }
-
-  @override
-  Future<Either<Failure, void>> addPhotoToDb(File photo) async {
-    if (await networkInfo.isConnected) {
-      try {
-        await personRemoteDataSource.addPhotoToDb(photo);
+        await personRemoteDataSource.changeUserPhoto(photo);
         return right(null);
       } on ServerException {
         return Left(ServerFailure());

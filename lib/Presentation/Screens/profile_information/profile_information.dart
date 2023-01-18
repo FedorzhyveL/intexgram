@@ -39,7 +39,6 @@ class _ProfileInformationState extends State<ProfileInformation> {
     bloc = ProfileInformationBloc(
       serverLocator(),
       serverLocator(),
-      serverLocator(),
     );
     nickNameController.text = widget.user.nickName;
     userNameController.text = widget.user.userName;

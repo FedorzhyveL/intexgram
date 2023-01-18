@@ -1,5 +1,5 @@
 import 'package:intexgram/Data/datasources/local_datasource.dart';
-import 'package:intexgram/Data/datasources/post_remote_datasourcs.dart';
+import 'package:intexgram/Data/datasources/post_remote_datasource.dart';
 import 'package:intexgram/Domain/entities/post_entity.dart';
 import 'package:dartz/dartz.dart';
 import 'package:intexgram/Domain/repositories/post_repository.dart';

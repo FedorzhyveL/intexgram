@@ -3,8 +3,7 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:intexgram/Domain/entities/person_entity.dart';
-import 'package:intexgram/Domain/usecases/person_use_cases/add_photo_to_db_use_case.dart';
-import 'package:intexgram/Domain/usecases/person_use_cases/delete_user_photo_use_case.dart';
+import 'package:intexgram/Domain/usecases/person_use_cases/change_photo_use_case.dart';
 import 'package:intexgram/Domain/usecases/person_use_cases/update_current_person_use_case.dart';
 import 'package:path/path.dart';
 
@@ -14,12 +13,10 @@ import 'profile_information_state.dart';
 class ProfileInformationBloc
     extends Bloc<ProfileInformationEvent, ProfileInformationState> {
   final UpdateCurrentPersonUseCase updateCurrentPerson;
-  final DeleteUserPhotoUseCase deleteUserPhoto;
-  final AddPhotoToDbUseCase addPhotoToDb;
+  final ChangePhotoUseCase changePhoto;
   ProfileInformationBloc(
     this.updateCurrentPerson,
-    this.deleteUserPhoto,
-    this.addPhotoToDb,
+    this.changePhoto,
   ) : super(const Initial()) {
     on<ProfileInformationEvent>(
       (event, emit) async {
@@ -74,9 +71,7 @@ class ProfileInformationBloc
           emit(Exit(isChanged));
         }
       } else {
-        await deleteUserPhoto(DeleteUserPhotoParams(userEmail: user.email));
-
-        await addPhotoToDb(AddPhotoToDbParams(photo: newPhoto));
+        await changePhoto(ChangePhotoParams(photo: newPhoto));
 
         await updateCurrentPerson(
           UpdateCurrentPersonParams(

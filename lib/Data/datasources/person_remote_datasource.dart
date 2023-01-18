@@ -34,14 +34,6 @@ abstract class PersonRemoteDataSource {
     String email,
   );
 
-  Future<void> deleteUserPhoto(
-    String userEmail,
-  );
-
-  Future<void> addPhotoToDb(
-    File photo,
-  );
-
   Future<List<PersonModel>> getPersonsFromCollection(
     String firstCollectionName,
     String secondCollectionName,
@@ -51,6 +43,8 @@ abstract class PersonRemoteDataSource {
   Future<void> unSubscribe(String userEmail);
 
   Future<void> subscribe(String userEmail);
+
+  Future<void> changeUserPhoto(File photo);
 }
 
 class PersonRemoteDataSourceImpl implements PersonRemoteDataSource {
@@ -195,31 +189,6 @@ class PersonRemoteDataSourceImpl implements PersonRemoteDataSource {
   }
 
   @override
-  Future<void> deleteUserPhoto(String userEmail) async {
-    await FirebaseFirestore.instance
-        .collection("Users")
-        .doc(userEmail)
-        .get()
-        .then(
-      (value) async {
-        if (value.get("Photo") != "default/default_profile_image.png") {
-          await FirebaseStorage.instance
-              .ref()
-              .child(value.get("Photo"))
-              .delete();
-        }
-      },
-    );
-  }
-
-  @override
-  Future<void> addPhotoToDb(File photo) async {
-    await FirebaseStorage.instance
-        .ref("images/${basename(photo.path)}")
-        .putFile(photo);
-  }
-
-  @override
   Future<List<PersonModel>> getPersonsFromCollection(
     String firstCollectionName,
     String secondCollectionName,
@@ -273,5 +242,27 @@ class PersonRemoteDataSourceImpl implements PersonRemoteDataSource {
         .collection("Following")
         .doc(userEmail)
         .delete();
+  }
+
+  @override
+  Future<void> changeUserPhoto(File photo) async {
+    await FirebaseStorage.instance
+        .ref("images/${basename(photo.path)}")
+        .putFile(photo);
+
+    await FirebaseFirestore.instance
+        .collection("Users")
+        .doc(FirebaseAuth.instance.currentUser!.email)
+        .get()
+        .then(
+      (value) async {
+        if (value.get("Photo") != "default/default_profile_image.png") {
+          await FirebaseStorage.instance
+              .ref()
+              .child(value.get("Photo"))
+              .delete();
+        }
+      },
+    );
   }
 }

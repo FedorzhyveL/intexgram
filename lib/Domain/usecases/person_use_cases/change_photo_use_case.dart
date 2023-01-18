@@ -6,20 +6,20 @@ import 'package:intexgram/Domain/repositories/person_repository.dart';
 import 'package:intexgram/core/error/failure.dart';
 import 'package:intexgram/core/usecases/use_case.dart';
 
-class AddPhotoToDbUseCase extends UseCase<void, AddPhotoToDbParams> {
+class ChangePhotoUseCase extends UseCase<void, ChangePhotoParams> {
   PersonRepository personRepository;
-  AddPhotoToDbUseCase(this.personRepository);
+  ChangePhotoUseCase(this.personRepository);
 
   @override
-  Future<Either<Failure, void>> call(AddPhotoToDbParams params) async {
-    return await personRepository.addPhotoToDb(params.photo);
+  Future<Either<Failure, void>> call(ChangePhotoParams params) async {
+    return await personRepository.changeUserPhoto(params.photo);
   }
 }
 
-class AddPhotoToDbParams extends Equatable {
+class ChangePhotoParams extends Equatable {
   final File photo;
 
-  const AddPhotoToDbParams({required this.photo});
+  const ChangePhotoParams({required this.photo});
   @override
   List<Object?> get props => [];
 }
