@@ -13,12 +13,6 @@ abstract class CommentsPageEvent with _$CommentsPageEvent {
     required PostEntity post,
   }) = LoadDescription;
 
-  const factory CommentsPageEvent.loadAllComments({
-    required PostEntity post,
-    required List<CommentEntity> comments,
-    required PersonEntity currentUser,
-  }) = LoadAllComments;
-
   const factory CommentsPageEvent.commentValueChanged({
     required Loaded currentState,
     required String value,

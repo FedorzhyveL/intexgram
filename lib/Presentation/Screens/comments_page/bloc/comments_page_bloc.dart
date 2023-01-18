@@ -30,13 +30,6 @@ class CommentsPageBloc extends Bloc<CommentsPageEvent, CommentsPageState> {
             post,
             emit,
           ),
-          loadAllComments: (post, comments, currentUser) async =>
-              await _loadAllComments(
-            post,
-            comments,
-            currentUser,
-            emit,
-          ),
           commentValueChanged: (state, value) async =>
               await _commentValueChanged(
             state,
@@ -82,23 +75,13 @@ class CommentsPageBloc extends Bloc<CommentsPageEvent, CommentsPageState> {
         allowPublish: false,
       ),
     );
-  }
-
-  FutureOr<void> _loadAllComments(
-    PostEntity post,
-    List<CommentEntity> comments,
-    PersonEntity user,
-    Emitter<CommentsPageState> emit,
-  ) async {
-    List<CommentEntity> allComments = [];
-    allComments.addAll(comments);
     final commentsOrFailure = await getComments(GetCommentsParams(post));
     commentsOrFailure.fold(
-        (l) => null, (comments) => allComments.addAll(comments));
+        (l) => null, (commentsList) => comments.addAll(commentsList));
 
     emit(
       Loaded(
-        comments: allComments,
+        comments: comments,
         currentUser: user,
         allowPublish: false,
         post: post,
