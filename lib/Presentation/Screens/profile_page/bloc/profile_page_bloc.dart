@@ -37,13 +37,8 @@ class ProfilePageBloc extends Bloc<ProfilePageEvent, ProfilePageState> {
     on<ProfilePageEvent>(
       (event, emit) async {
         await event.when(
-          getUser: ((userEmail) async => await _getUser(
-                userEmail,
-                emit,
-              )),
-          loadGallery: ((user, isFollowing) async => await _loadGallery(
+          load: ((user) async => await _load(
                 user,
-                isFollowing,
                 emit,
               )),
           subscribe: ((
@@ -77,7 +72,7 @@ class ProfilePageBloc extends Bloc<ProfilePageEvent, ProfilePageState> {
     );
   }
 
-  FutureOr<void> _getUser(
+  FutureOr<void> _load(
     String userEmail,
     Emitter<ProfilePageState> emit,
   ) async {
@@ -87,47 +82,42 @@ class ProfilePageBloc extends Bloc<ProfilePageEvent, ProfilePageState> {
         fromCache: false,
       ),
     );
-
+    final subscription = await isSubscribed(userEmail);
     return failureOrPerson.fold(
       (failure) => Failure,
       (user) async {
         if (userEmail != FirebaseAuth.instance.currentUser!.email) {
           emit(
-            UserReady(
+            Ready(
               user,
               FirebaseAuth.instance.currentUser!.email!,
-              await isSubscribed(userEmail),
+              [],
+              subscription,
             ),
           );
         } else {
           emit(
-            UserReady(
+            Ready(
               user,
               FirebaseAuth.instance.currentUser!.email!,
-              null,
+              [],
+              subscription,
             ),
           );
         }
+        List<PostEntity> userPosts = [];
+        final listOrFailure =
+            await getUserPosts(GetUserPostsParams(email: user.email));
+        listOrFailure.fold((l) => null, (posts) => userPosts = posts);
+        emit(
+          Ready(
+            user,
+            FirebaseAuth.instance.currentUser!.email!,
+            userPosts,
+            subscription,
+          ),
+        );
       },
-    );
-  }
-
-  FutureOr<void> _loadGallery(
-    PersonEntity user,
-    bool? isFollowing,
-    Emitter<ProfilePageState> emit,
-  ) async {
-    List<PostEntity> userPosts = [];
-    final listOrFailure =
-        await getUserPosts(GetUserPostsParams(email: user.email));
-    listOrFailure.fold((l) => null, (posts) => userPosts = posts);
-    emit(
-      Ready(
-        user,
-        FirebaseAuth.instance.currentUser!.email!,
-        userPosts,
-        isFollowing,
-      ),
     );
   }
 
@@ -142,17 +132,13 @@ class ProfilePageBloc extends Bloc<ProfilePageEvent, ProfilePageState> {
   _subscribe(
     PersonEntity user,
     String currentUserEmail,
-    List<PostEntity>? posts,
+    List<PostEntity> posts,
     bool? isFollowing,
     Emitter<ProfilePageState> emit,
   ) async {
     try {
       await subscribe(SubscribeParams(userEmail: user.email));
-      if (posts == null) {
-        emit(UserReady(user, currentUserEmail, true));
-      } else {
-        emit(Ready(user, currentUserEmail, posts, true));
-      }
+      emit(Ready(user, currentUserEmail, posts, true));
     } catch (e) {
       log(e.toString());
     }
@@ -161,17 +147,13 @@ class ProfilePageBloc extends Bloc<ProfilePageEvent, ProfilePageState> {
   _unSubscribe(
     PersonEntity user,
     String currentUserEmail,
-    List<PostEntity>? posts,
+    List<PostEntity> posts,
     bool? isFollowing,
     Emitter<ProfilePageState> emit,
   ) async {
     try {
       await unSubscribe(UnSubscribeParams(userEmail: user.email));
-      if (posts == null) {
-        emit(UserReady(user, currentUserEmail, false));
-      } else {
-        emit(Ready(user, currentUserEmail, posts, false));
-      }
+      emit(Ready(user, currentUserEmail, posts, false));
     } catch (e) {
       log(e.toString());
     }
