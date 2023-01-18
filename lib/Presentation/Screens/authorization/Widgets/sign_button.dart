@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intexgram/Presentation/Routes/router.gr.dart';
+import 'package:intexgram/Presentation/theme/palette.dart';
+import 'package:intexgram/Presentation/theme/text_styles.dart';
 import 'package:intexgram/locator_service.dart';
 
 class SignButton extends StatelessWidget {
@@ -14,7 +16,7 @@ class SignButton extends StatelessWidget {
           label == 'Sign up'
               ? "Don't have an account?"
               : "Already have an account?",
-          style: const TextStyle(fontSize: 20),
+          style: TextStyles.signButtonText,
         ),
         TextButton(
           onPressed: () {
@@ -25,7 +27,9 @@ class SignButton extends StatelessWidget {
           },
           child: Text(
             '$label.',
-            style: const TextStyle(fontSize: 20),
+            style: TextStyles.signButtonText.copyWith(
+              color: Palette.signTextColor,
+            ),
           ),
         ),
       ],
