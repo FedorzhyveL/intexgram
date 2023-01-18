@@ -47,6 +47,15 @@ dependencies:
   flutter_bloc: ^8.1.1
   get_it: ^7.2.0
   bloc: ^8.1.0
+  firebase_storage: ^11.0.9
+  image_picker: ^0.8.6
+  path: ^1.8.2
+  image: ^4.0.10
+  camera: ^0.10.1
+  email_validator: ^2.1.17
+  intl: ^0.18.0
+  cached_network_image: ^3.2.3
+  freezed_annotation: ^2.2.0
 
 dev_dependencies:
   flutter_test:
@@ -60,6 +69,7 @@ dev_dependencies:
   flutter_lints: ^2.0.0
   auto_route_generator: 5.0.3
   build_runner: ^2.3.3
+  freezed: ^2.3.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -78,6 +88,7 @@ flutter:
   #   - images/a_dot_ham.jpeg
   assets:
     - assets/photos/original.jpg
+    - assets/icons/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
