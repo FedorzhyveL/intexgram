@@ -1,11 +1,15 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:intexgram/Domain/entities/person_entity.dart';
-import 'package:intexgram/Presentation/Screens/authorization/Widgets/form_text_field.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intexgram/Presentation/Screens/authorization/sign_up/bloc/sign_up_bloc.dart';
+import 'package:intexgram/Presentation/Screens/widgets/form_text_field.dart';
 import 'package:intexgram/Presentation/Screens/authorization/Widgets/or_divider.dart';
 import 'package:intexgram/Presentation/Screens/authorization/Widgets/sign_button.dart';
-import 'package:intexgram/Presentation/Screens/authorization/sign_up/cubit/sign_up_cubit.dart';
+import 'package:intexgram/Presentation/theme/palette.dart';
+import 'package:intexgram/Presentation/theme/text_styles.dart';
 import 'package:intexgram/locator_service.dart';
+
+import 'bloc/sign_up_event.dart';
+import 'bloc/sign_up_state.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -16,43 +20,49 @@ class SignUpPage extends StatefulWidget {
 
 class _SignUpPageState extends State<SignUpPage> {
   final _formKey = GlobalKey<FormState>();
-  FirebaseAuth auth = FirebaseAuth.instance;
-  PersonEntity user = PersonEntity();
   var emailController = TextEditingController();
   var passwordController = TextEditingController();
   var nickNameController = TextEditingController();
   var userNameController = TextEditingController();
-  late final SignUpCubit bloc;
+
+  late final SignUpBloc bloc;
+
   @override
   void initState() {
-    bloc = SignUpCubit(serverLocator());
+    bloc = SignUpBloc(serverLocator(), serverLocator());
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            formLabel(),
-            signUpForm(),
-            const OrDivider(),
-            const SignButton(label: 'Sign in'),
-          ],
-        ),
+    return BlocProvider(
+      create: (context) => bloc,
+      child: BlocBuilder<SignUpBloc, SignUpState>(
+        builder: (context, state) {
+          return Scaffold(
+            resizeToAvoidBottomInset: false,
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  formLabel(),
+                  signUpForm(),
+                  const OrDivider(),
+                  const SignButton(label: 'Sign in'),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 
   Widget formLabel() {
-    return const Text(
+    return Text(
       "Intexgram",
-      style: TextStyle(
+      style: TextStyles.text.copyWith(
         fontStyle: FontStyle.italic,
-        fontSize: 20,
       ),
     );
   }
@@ -80,16 +90,22 @@ class _SignUpPageState extends State<SignUpPage> {
           ),
           MaterialButton(
             padding: const EdgeInsets.all(5),
-            color: Colors.blue[300],
+            color: Palette.signButtonColor,
             child: const Text(
               'Sign up',
-              style: TextStyle(fontSize: 25, color: Colors.white),
+              style: TextStyles.signButtonText,
             ),
             onPressed: () {
-              bloc.setUser(emailController.text, passwordController.text,
-                  userNameController.text, nickNameController.text);
+              bloc.add(
+                SignUp(
+                  emailController: emailController,
+                  passwordController: passwordController,
+                  userNameController: userNameController,
+                  nickNameController: nickNameController,
+                ),
+              );
             },
-          )
+          ),
         ],
       ),
     );
