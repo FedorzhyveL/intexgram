@@ -1,8 +1,21 @@
 class PersonEntity {
-  String? nickName;
-  String? email;
-  String? password;
-  String? userName;
+  String email;
+  String nickName;
+  String userName;
+  String profilePicturePath;
+  String? description;
+  int posts;
+  int followers;
+  int following;
 
-  PersonEntity({this.nickName, this.email, this.password, this.userName});
+  PersonEntity({
+    required this.nickName,
+    required this.email,
+    required this.userName,
+    required this.profilePicturePath,
+    this.description,
+    required this.followers,
+    required this.following,
+    required this.posts,
+  });
 }
