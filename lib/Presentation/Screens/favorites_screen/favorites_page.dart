@@ -36,73 +36,83 @@ class _FavoritesPageState extends State<FavoritesPage> {
       create: (context) => bloc..add(const Load()),
       child: BlocBuilder<FavoritesBloc, FavoritesState>(
         builder: (context, state) {
-          if (state is Updated) bloc.add(Update(state.posts));
-          return Scaffold(
-            appBar: AppBar(
-              backgroundColor: Palette.appBarColor,
-              centerTitle: true,
-              title: const Text(
-                'Favorites',
-                style: TextStyles.appBarText,
-              ),
-            ),
-            body: RefreshIndicator(
-              onRefresh: (() {
-                final refreshBloc = bloc.stream.first;
-                bloc.add(const Load());
-                return refreshBloc;
-              }),
-              child: state is Loaded
-                  ? ListView.builder(
-                      itemCount: state.posts.length,
-                      itemBuilder: (context, index) {
-                        return Post(
-                          post: state.posts[index],
-                          addToFavorite: () {
-                            bloc.add(
-                              AddToFavorite(
-                                state.posts,
-                                state.posts[index],
-                                index,
-                              ),
-                            );
-                          },
-                          removeFromFavorite: () {
-                            bloc.add(
-                              RemoveFromFavorite(
-                                state.posts,
-                                state.posts[index],
-                                index,
-                              ),
-                            );
-                          },
-                          removeLike: () {
-                            bloc.add(
-                              RemoveLike(
-                                state.posts,
-                                state.posts[index],
-                                index,
-                              ),
-                            );
-                          },
-                          setLike: () {
-                            bloc.add(
-                              SetLike(
-                                state.posts,
-                                state.posts[index],
-                                index,
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    )
-                  : const Center(
-                      child: CircularProgressIndicator(),
-                    ),
-            ),
+          return state.when(
+            initial: (() => content(state)),
+            loaded: ((posts) => content(state)),
+            updated: ((posts) {
+              bloc.add(Update(posts));
+              return content(state);
+            }),
           );
         },
+      ),
+    );
+  }
+
+  Widget content(FavoritesState state) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Palette.appBarColor,
+        centerTitle: true,
+        title: const Text(
+          'Favorites',
+          style: TextStyles.appBarText,
+        ),
+      ),
+      body: RefreshIndicator(
+        onRefresh: (() {
+          final refreshBloc = bloc.stream.first;
+          bloc.add(const Load());
+          return refreshBloc;
+        }),
+        child: state is Loaded
+            ? ListView.builder(
+                itemCount: state.posts.length,
+                itemBuilder: (context, index) {
+                  return Post(
+                    post: state.posts[index],
+                    addToFavorite: () {
+                      bloc.add(
+                        AddToFavorite(
+                          state.posts,
+                          state.posts[index],
+                          index,
+                        ),
+                      );
+                    },
+                    removeFromFavorite: () {
+                      bloc.add(
+                        RemoveFromFavorite(
+                          state.posts,
+                          state.posts[index],
+                          index,
+                        ),
+                      );
+                    },
+                    removeLike: () {
+                      bloc.add(
+                        RemoveLike(
+                          state.posts,
+                          state.posts[index],
+                          index,
+                        ),
+                      );
+                    },
+                    setLike: () {
+                      bloc.add(
+                        SetLike(
+                          state.posts,
+                          state.posts[index],
+                          index,
+                        ),
+                      );
+                    },
+                  );
+                },
+              )
+            : const Center(
+                child: CircularProgressIndicator(),
+              ),
       ),
     );
   }
