@@ -49,85 +49,91 @@ class _UserListOfPostsState extends State<UserListOfPosts> {
       create: (context) => bloc,
       child: BlocBuilder<UserListOfPostsBloc, UserListOfPostsState>(
         builder: (context, state) {
-          if (state is PostUpdated) {
-            bloc.add(SetToInitial(state.posts));
-          }
-          return Scaffold(
-            body: SafeArea(
-              top: true,
-              child: NestedScrollView(
-                floatHeaderSlivers: true,
-                headerSliverBuilder:
-                    (BuildContext context, bool innerBoxIsScrolled) {
-                  return [
-                    SliverAppBar(
-                      backgroundColor: Palette.appBarColor,
-                      automaticallyImplyLeading: false,
-                      leading: IconButton(
-                        icon: const Icon(
-                          Icons.arrow_back_rounded,
-                          size: 30,
-                        ),
-                        color: Palette.appBarIconColor,
-                        onPressed: () {
-                          serverLocator<FlutterRouter>().pop();
-                        },
-                      ),
-                      title: const Text(
-                        "Posts",
-                        style: TextStyles.appBarText,
-                      ),
-                    ),
-                  ];
-                },
-                body: ListView.builder(
-                  itemCount: state.posts.length,
-                  itemBuilder: (context, index) {
-                    return Post(
-                      post: state.posts[index],
-                      addToFavorite: () {
-                        bloc.add(
-                          AddPostToFavorite(
-                            state.posts,
-                            state.posts[index],
-                            index,
-                          ),
-                        );
-                      },
-                      removeFromFavorite: () {
-                        bloc.add(
-                          RemovePostFromFavorite(
-                            state.posts,
-                            state.posts[index],
-                            index,
-                          ),
-                        );
-                      },
-                      removeLike: () {
-                        bloc.add(
-                          RemoveLike(
-                            state.posts,
-                            state.posts[index],
-                            index,
-                          ),
-                        );
-                      },
-                      setLike: () {
-                        bloc.add(
-                          SetLike(
-                            state.posts,
-                            state.posts[index],
-                            index,
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
-            ),
+          return state.when(
+            initial: (posts) => content(posts),
+            postUpdated: (posts) {
+              bloc.add(SetToInitial(state.posts));
+              return content(posts);
+            },
           );
         },
+      ),
+    );
+  }
+
+  Widget content(List<PostEntity> posts) {
+    return Scaffold(
+      body: SafeArea(
+        top: true,
+        child: NestedScrollView(
+          floatHeaderSlivers: true,
+          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+            return [
+              SliverAppBar(
+                backgroundColor: Palette.appBarColor,
+                automaticallyImplyLeading: false,
+                leading: IconButton(
+                  icon: const Icon(
+                    Icons.arrow_back_rounded,
+                    size: 30,
+                  ),
+                  color: Palette.appBarIconColor,
+                  onPressed: () {
+                    serverLocator<FlutterRouter>().pop();
+                  },
+                ),
+                title: const Text(
+                  "Posts",
+                  style: TextStyles.appBarText,
+                ),
+              ),
+            ];
+          },
+          body: ListView.builder(
+            itemCount: posts.length,
+            itemBuilder: (context, index) {
+              return Post(
+                post: posts[index],
+                addToFavorite: () {
+                  bloc.add(
+                    AddPostToFavorite(
+                      posts,
+                      posts[index],
+                      index,
+                    ),
+                  );
+                },
+                removeFromFavorite: () {
+                  bloc.add(
+                    RemovePostFromFavorite(
+                      posts,
+                      posts[index],
+                      index,
+                    ),
+                  );
+                },
+                removeLike: () {
+                  bloc.add(
+                    RemoveLike(
+                      posts,
+                      posts[index],
+                      index,
+                    ),
+                  );
+                },
+                setLike: () {
+                  bloc.add(
+                    SetLike(
+                      posts,
+                      posts[index],
+                      index,
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
       ),
     );
   }
