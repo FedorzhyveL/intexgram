@@ -1,14 +1,12 @@
-import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+
+import 'sign_up_state.dart';
 
 part 'sign_up_event.freezed.dart';
 
 @freezed
 class SignUpEvent with _$SignUpEvent {
-  const factory SignUpEvent.signUp({
-    required TextEditingController emailController,
-    required TextEditingController passwordController,
-    required TextEditingController userNameController,
-    required TextEditingController nickNameController,
-  }) = SignUp;
+  const factory SignUpEvent.signUp(
+    SignUpState state,
+  ) = SignUp;
 }

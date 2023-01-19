@@ -8,6 +8,7 @@ import 'package:intexgram/Presentation/theme/palette.dart';
 import 'package:intexgram/Presentation/theme/text_styles.dart';
 import 'package:intexgram/locator_service.dart';
 
+import '../../../Routes/router.gr.dart';
 import 'bloc/sign_up_event.dart';
 import 'bloc/sign_up_state.dart';
 
@@ -29,7 +30,14 @@ class _SignUpPageState extends State<SignUpPage> {
 
   @override
   void initState() {
-    bloc = SignUpBloc(serverLocator(), serverLocator());
+    bloc = SignUpBloc(
+      serverLocator(),
+      serverLocator(),
+      emailController,
+      passwordController,
+      nickNameController,
+      userNameController,
+    );
     super.initState();
   }
 
@@ -37,21 +45,43 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => bloc,
-      child: BlocBuilder<SignUpBloc, SignUpState>(
-        builder: (context, state) {
-          return Scaffold(
-            resizeToAvoidBottomInset: false,
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  formLabel(),
-                  signUpForm(),
-                  const OrDivider(),
-                  const SignButton(label: 'Sign in'),
-                ],
+      child: BlocConsumer<SignUpBloc, SignUpState>(
+        listener: (context, state) async {
+          if (state is Succes) {
+            await serverLocator<FlutterRouter>().replace<bool>(
+              ProfileInformationRoute(
+                user: state.user,
               ),
-            ),
+            );
+            serverLocator<FlutterRouter>().replaceAll(
+              [const MainScreenRoute()],
+            );
+          }
+        },
+        builder: (context, state) {
+          return state.when(
+            initial: (
+              emailController,
+              passwordController,
+              nickNameController,
+              userNameController,
+            ) {
+              return Scaffold(
+                resizeToAvoidBottomInset: false,
+                body: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      formLabel(),
+                      signUpForm(state),
+                      const OrDivider(),
+                      const SignButton(label: 'Sign in'),
+                    ],
+                  ),
+                ),
+              );
+            },
+            succes: (user) => Container(),
           );
         },
       ),
@@ -67,7 +97,7 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
-  Widget signUpForm() {
+  Widget signUpForm(SignUpState state) {
     return Form(
       key: _formKey,
       child: Column(
@@ -79,6 +109,7 @@ class _SignUpPageState extends State<SignUpPage> {
           FormTextField(
             label: 'Password',
             controller: passwordController,
+            password: true,
           ),
           FormTextField(
             label: 'Nick name',
@@ -96,14 +127,7 @@ class _SignUpPageState extends State<SignUpPage> {
               style: TextStyles.signButtonText,
             ),
             onPressed: () {
-              bloc.add(
-                SignUp(
-                  emailController: emailController,
-                  passwordController: passwordController,
-                  userNameController: userNameController,
-                  nickNameController: nickNameController,
-                ),
-              );
+              bloc.add(SignUp(state));
             },
           ),
         ],

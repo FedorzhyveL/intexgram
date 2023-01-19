@@ -4,11 +4,9 @@ import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:intexgram/Domain/usecases/person_use_cases/get_current_person_use_case.dart';
 import 'package:intexgram/Domain/usecases/person_use_cases/set_current_person_use_case.dart';
-import 'package:intexgram/Presentation/Routes/router.gr.dart';
-import 'package:intexgram/locator_service.dart';
 
 import 'sign_up_event.dart';
 import 'sign_up_state.dart';
@@ -16,72 +14,78 @@ import 'sign_up_state.dart';
 class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
   final SetCurrentPersonUseCase setCurrentPerson;
   final GetCurrentPersonUseCase getCurrentPerson;
-  SignUpBloc(this.setCurrentPerson, this.getCurrentPerson)
-      : super(const Initial()) {
+  SignUpBloc(
+    this.setCurrentPerson,
+    this.getCurrentPerson,
+    TextEditingController emailController,
+    TextEditingController passwordController,
+    TextEditingController nickNameController,
+    TextEditingController userNameController,
+  ) : super(
+          Initial(
+            emailController,
+            passwordController,
+            nickNameController,
+            userNameController,
+          ),
+        ) {
     on<SignUpEvent>(
       (event, emit) async {
         await event.when(
-          signUp: (
-            emailController,
-            passwordController,
-            userNameController,
-            nickNameController,
-          ) async =>
-              await _signUpPressed(
-            emailController,
-            passwordController,
-            userNameController,
-            nickNameController,
-            emit,
-          ),
+          signUp: (state) async => await _signUpPressed(state, emit),
         );
       },
     );
   }
 
   FutureOr<void> _signUpPressed(
-    TextEditingController emailController,
-    TextEditingController passwordController,
-    TextEditingController userNameController,
-    TextEditingController nickNameController,
+    SignUpState state,
     Emitter<SignUpState> emit,
   ) async {
-    String email = format(emailController.text).toLowerCase();
-    String password = format(passwordController.text);
-    String nickName = format(nickNameController.text);
-    String userName = format(userNameController.text);
+    if (state is Initial) {
+      String email = format(state.emailController.text).toLowerCase();
+      String password = format(state.passwordController.text);
+      String nickName = format(state.nickNameController.text);
+      String userName = format(state.userNameController.text);
 
-    try {
       await FirebaseFirestore.instance.collection("Users").get().then(
         ((value) {
           for (var doc in value.docs) {
             if (doc.get("Nick Name") == nickName) {
-              nickNameController.clear();
+              state.nickNameController.clear();
               nickName = '';
-            }
-            if (doc.get("Email") == email) {
-              emailController.clear();
-              email = '';
             }
           }
         }),
       );
 
       if (!EmailValidator.validate(email)) {
-        emailController.clear();
+        state.emailController.clear();
         email = '';
       }
 
-      if (nickName != '' && EmailValidator.validate(email)) {
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: email,
-          password: password,
-        );
+      if (nickName != '') {
+        try {
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+            email: email,
+            password: password,
+          );
+        } catch (e) {
+          state.emailController.clear();
+          state.passwordController.clear();
+          return;
+        }
 
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: email,
-          password: password,
-        );
+        try {
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
+            email: email,
+            password: password,
+          );
+        } catch (e) {
+          state.emailController.clear();
+          state.passwordController.clear();
+          return;
+        }
 
         await setCurrentPerson(
           SetCurrentPersonParams(
@@ -94,28 +98,8 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
         );
         var failureOrPerson = await getCurrentPerson(
             GetCurrentPersonParams(email: email, fromCache: false));
-        failureOrPerson.fold(
-          (l) => null,
-          (user) async {
-            emit(const Succes());
-            await serverLocator<FlutterRouter>()
-                .replace<bool>(ProfileInformationRoute(user: user));
-            serverLocator<FlutterRouter>().replaceAll(
-              [const MainScreenRoute()],
-            );
-          },
-        );
-      }
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'email-already-in-use' || e.code == 'invalid-email') {
-        emailController.clear();
-      } else {
-        if (e.code == 'weak-password') {
-          passwordController.clear();
-        } else {
-          emailController.clear();
-          passwordController.clear();
-        }
+
+        failureOrPerson.fold((l) => null, (user) => emit(Succes(user)));
       }
     }
   }

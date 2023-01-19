@@ -6,12 +6,14 @@ class FormTextField extends StatelessWidget {
   final String label;
   final TextEditingController controller;
   final int maxLines;
+  final bool password;
 
   const FormTextField({
     super.key,
     required this.label,
     required this.controller,
     this.maxLines = 1,
+    this.password = false,
   });
 
   @override
@@ -19,6 +21,7 @@ class FormTextField extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: TextFormField(
+        obscureText: password,
         autovalidateMode: AutovalidateMode.always,
         cursorColor: Palette.textColor,
         controller: controller,

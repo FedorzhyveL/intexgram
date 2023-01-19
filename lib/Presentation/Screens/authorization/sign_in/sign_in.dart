@@ -91,6 +91,7 @@ class _SignInPageState extends State<SignInPage> {
             FormTextField(
               label: 'Password',
               controller: passwordController,
+              password: true,
             ),
             Container(
               alignment: Alignment.centerRight,
