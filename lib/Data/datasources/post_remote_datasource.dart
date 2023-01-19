@@ -244,6 +244,7 @@ class PostRemoteDataSourceImpl implements PostRemoteDataSource {
         .collection("Users")
         .doc(email)
         .collection("Posts")
+        .orderBy("creation time", descending: true)
         .get()
         .then(
       (value) async {
@@ -252,8 +253,6 @@ class PostRemoteDataSourceImpl implements PostRemoteDataSource {
         }
       },
     );
-    userPosts.sort(((a, b) => a.creationTime.compareTo(b.creationTime)));
-    userPosts = userPosts.reversed.toList();
     return userPosts;
   }
 

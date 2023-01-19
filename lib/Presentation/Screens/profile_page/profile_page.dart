@@ -474,7 +474,7 @@ class _ProfilePageState extends State<ProfilePage>
             crossAxisSpacing: 2.5,
             mainAxisSpacing: 2.5,
           ),
-          itemCount: state.user.posts,
+          itemCount: state.posts.length,
           itemBuilder: (BuildContext context, int index) {
             return GestureDetector(
               child: FittedBox(
