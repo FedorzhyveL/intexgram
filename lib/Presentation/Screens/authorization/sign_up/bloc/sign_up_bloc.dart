@@ -22,17 +22,16 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
       (event, emit) async {
         await event.when(
           signUp: (
-            emailController,
-            passwordController,
-            userNameController,
-            nickNameController,
+            email,
+            password,
+            userName,
+            nickName,
           ) async =>
               await _signUpPressed(
-            emailController,
-            passwordController,
-            userNameController,
-            nickNameController,
-            emit,
+            email,
+            password,
+            userName,
+            nickName,
           ),
         );
       },
@@ -40,87 +39,133 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
   }
 
   FutureOr<void> _signUpPressed(
-    TextEditingController emailController,
-    TextEditingController passwordController,
-    TextEditingController userNameController,
-    TextEditingController nickNameController,
-    Emitter<SignUpState> emit,
+    String email,
+    String password,
+    String userName,
+    String nickName,
   ) async {
-    String email = format(emailController.text).toLowerCase();
-    String password = format(passwordController.text);
-    String nickName = format(nickNameController.text);
-    String userName = format(userNameController.text);
+    String newEmail = _format(email).toLowerCase();
+    String newPassword = _format(password);
+    String newUserName = _format(userName);
+    String newNickName = _format(nickName);
 
     try {
-      await FirebaseFirestore.instance.collection("Users").get().then(
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: newEmail,
+        password: newPassword,
+      );
+
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: newEmail,
+        password: newPassword,
+      );
+
+      await setCurrentPerson(
+        SetCurrentPersonParams(
+          profileImagePath: "default/default_profile_image.png",
+          email: newEmail,
+          password: newPassword,
+          nickName: newNickName,
+          userName: newUserName,
+          description: null,
+        ),
+      );
+      var failureOrPerson = await getCurrentPerson(
+          GetCurrentPersonParams(email: newEmail, fromCache: false));
+      failureOrPerson.fold(
+        (l) => null,
+        (user) async {
+          await serverLocator<FlutterRouter>()
+              .replace<bool>(ProfileInformationRoute(user: user));
+          serverLocator<FlutterRouter>().replaceAll(
+            [const MainScreenRoute()],
+          );
+        },
+      );
+    } catch (e) {
+      return;
+    }
+  }
+
+  Future<String?> validateEmail(String? email) async {
+    if (email == null) return "Email shouldn't be empty";
+
+    try {
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _format(email),
+        password: '',
+      );
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        return "This email not allowed";
+      } else {
+        if (e.code == 'invalid-email') {
+          return "This email not allowed";
+        } else {
+          if (e.code == 'operation-not-allowed') {
+            return "This email not allowed";
+          }
+        }
+      }
+    }
+
+    if (EmailValidator.validate(email)) return "This email not allowed";
+    return null;
+  }
+
+  Future<String?> validatePassword(String? password) async {
+    if (password == null) return "Password shouldn't be empty";
+
+    try {
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: '',
+        password: _format(password),
+      );
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'weak-password') {
+        return "Weak password";
+      } else {
+        if (e.code == 'operation-not-allowed') {
+          return "Weak password";
+        }
+      }
+    }
+    return null;
+  }
+
+  Future<String?> validateNickName(String? nickName) async {
+    if (nickName == null) return "Nick name shouldn exist";
+
+    try {
+      await FirebaseFirestore.instance
+          .collection("Users")
+          .where(
+            "Nick Name",
+            isEqualTo: nickName,
+          )
+          .get()
+          .then(
         ((value) {
           for (var doc in value.docs) {
             if (doc.get("Nick Name") == nickName) {
-              nickNameController.clear();
-              nickName = '';
-            }
-            if (doc.get("Email") == email) {
-              emailController.clear();
-              email = '';
+              return "This nick name is already in use";
             }
           }
         }),
       );
-
-      if (!EmailValidator.validate(email)) {
-        emailController.clear();
-        email = '';
-      }
-
-      if (nickName != '' && EmailValidator.validate(email)) {
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: email,
-          password: password,
-        );
-
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: email,
-          password: password,
-        );
-
-        await setCurrentPerson(
-          SetCurrentPersonParams(
-              profileImagePath: "default/default_profile_image.png",
-              email: email,
-              password: password,
-              nickName: nickName,
-              userName: userName,
-              description: null),
-        );
-        var failureOrPerson = await getCurrentPerson(
-            GetCurrentPersonParams(email: email, fromCache: false));
-        failureOrPerson.fold(
-          (l) => null,
-          (user) async {
-            emit(const Succes());
-            await serverLocator<FlutterRouter>()
-                .replace<bool>(ProfileInformationRoute(user: user));
-            serverLocator<FlutterRouter>().replaceAll(
-              [const MainScreenRoute()],
-            );
-          },
-        );
-      }
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'email-already-in-use' || e.code == 'invalid-email') {
-        emailController.clear();
-      } else {
-        if (e.code == 'weak-password') {
-          passwordController.clear();
-        } else {
-          emailController.clear();
-          passwordController.clear();
-        }
-      }
+    } catch (e) {
+      return "Something went wrong";
     }
+    return null;
   }
 
-  String format(String text) {
+  String? validateUserName(String? userName) {
+    if (userName == null) return "User name should exist";
+
+    return null;
+  }
+
+  String _format(String text) {
     while (text.endsWith(' ')) {
       text = text.substring(0, text.length - 1);
     }
