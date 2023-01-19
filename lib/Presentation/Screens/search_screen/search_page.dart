@@ -7,6 +7,7 @@ import 'package:intexgram/Presentation/theme/palette.dart';
 import 'package:intexgram/Presentation/theme/text_styles.dart';
 import 'package:intexgram/locator_service.dart';
 
+import '../../../Domain/entities/person_entity.dart';
 import 'bloc/search_page_event.dart';
 import 'bloc/search_page_state.dart';
 
@@ -34,7 +35,10 @@ class _SearchPageState extends State<SearchPage> {
         builder: (context, state) {
           return Scaffold(
             appBar: searchPageAppBar(state),
-            body: searchPageBody(state),
+            body: state.when(
+              initial: (() => const Center(child: CircularProgressIndicator())),
+              loaded: ((users) => searchPageBody(users)),
+            ),
           );
         },
       ),
@@ -76,73 +80,69 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget searchPageBody(SearchPageState state) {
-    if (state is Loaded) {
-      return Column(
-        children: [
-          ListView.builder(
-            physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            itemCount: state.users.length,
-            itemBuilder: (BuildContext context, int index) {
-              if (state.users[index].nickName.contains(searchController.text) ||
-                  state.users[index].userName.contains(searchController.text)) {
-                return GestureDetector(
-                  onTap: () {
-                    serverLocator<FlutterRouter>().push(
-                      ProfilePageRoute(
-                        userEmail: state.users[index].email,
+  Widget searchPageBody(List<PersonEntity> users) {
+    return Column(
+      children: [
+        ListView.builder(
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          itemCount: users.length,
+          itemBuilder: (BuildContext context, int index) {
+            if (users[index].nickName.contains(searchController.text) ||
+                users[index].userName.contains(searchController.text)) {
+              return GestureDetector(
+                onTap: () {
+                  serverLocator<FlutterRouter>().push(
+                    ProfilePageRoute(
+                      userEmail: users[index].email,
+                    ),
+                  );
+                },
+                behavior: HitTestBehavior.translucent,
+                child: Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        top: 20.0,
+                        left: 25,
+                        right: 25,
                       ),
-                    );
-                  },
-                  behavior: HitTestBehavior.translucent,
-                  child: Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(
-                          top: 20.0,
-                          left: 25,
-                          right: 25,
-                        ),
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 30,
-                              backgroundImage: CachedNetworkImageProvider(
-                                state.users[index].profilePicturePath,
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 30,
+                            backgroundImage: CachedNetworkImageProvider(
+                              users[index].profilePicturePath,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                users[index].nickName,
+                                style: TextStyles.text,
                               ),
-                            ),
-                            const SizedBox(width: 10),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  state.users[index].nickName,
-                                  style: TextStyles.text,
+                              Text(
+                                users[index].userName,
+                                style: TextStyles.text.copyWith(
+                                  color: Colors.grey,
                                 ),
-                                Text(
-                                  state.users[index].userName,
-                                  style: TextStyles.text.copyWith(
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                );
-              } else {
-                return Container();
-              }
-            },
-          ),
-        ],
-      );
-    } else {
-      return const Center(child: CircularProgressIndicator());
-    }
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              return Container();
+            }
+          },
+        ),
+      ],
+    );
   }
 }
