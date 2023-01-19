@@ -11,4 +11,8 @@ class SearchPageState with _$SearchPageState {
   const factory SearchPageState.loaded(
     List<PersonEntity> users,
   ) = Loaded;
+
+  const factory SearchPageState.newUserLoaded(
+    List<PersonEntity> users,
+  ) = NewUserLoaded;
 }
