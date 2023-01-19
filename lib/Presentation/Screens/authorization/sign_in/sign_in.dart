@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intexgram/Presentation/Routes/router.gr.dart';
 import 'package:intexgram/Presentation/Screens/authorization/sign_in/bloc/sign_in_bloc.dart';
 import 'package:intexgram/Presentation/Screens/widgets/form_text_field.dart';
 import 'package:intexgram/Presentation/Screens/authorization/Widgets/or_divider.dart';
 import 'package:intexgram/Presentation/Screens/authorization/Widgets/sign_button.dart';
 import 'package:intexgram/Presentation/theme/palette.dart';
 import 'package:intexgram/Presentation/theme/text_styles.dart';
-import 'package:intexgram/locator_service.dart';
 
 import 'bloc/sign_in_event.dart';
 import 'bloc/sign_in_state.dart';
@@ -37,12 +35,6 @@ class _SignInPageState extends State<SignInPage> {
       create: (context) => bloc,
       child: BlocBuilder<SignInBloc, SignInState>(
         builder: (context, state) {
-          if (state is WrongEmail || state is WrongPassword) {
-            _formKey.currentState!.reset();
-          }
-          if (state is Succes) {
-            serverLocator<FlutterRouter>().replace(const MainScreenRoute());
-          }
           return Scaffold(
             resizeToAvoidBottomInset: false,
             body: Center(
@@ -76,13 +68,40 @@ class _SignInPageState extends State<SignInPage> {
       key: _formKey,
       child: Column(
         children: [
-          FormTextField(
-            label: 'Email',
-            controller: emailController,
-          ),
-          FormTextField(
-            label: 'Password',
-            controller: passwordController,
+          BlocConsumer<SignInBloc, SignInState>(
+            builder: (context, state) {
+              return Column(
+                children: [
+                  FormTextField(
+                    label: 'Email',
+                    controller: emailController,
+                    validation: (email) {
+                      String? message;
+                      bloc
+                          .validateEmail(email)
+                          .then((value) => message = value);
+                      return message;
+                    },
+                  ),
+                  FormTextField(
+                    label: 'Password',
+                    controller: passwordController,
+                    validation: (password) {
+                      String? message;
+                      bloc
+                          .validatePassword(password)
+                          .then((value) => message = value);
+                      return message;
+                    },
+                  ),
+                ],
+              );
+            },
+            listener: (context, state) {
+              // if (state is WrongEmail || state is WrongPassword) {
+              //   _formKey.currentState!.reset();
+              // }
+            },
           ),
           Container(
             alignment: Alignment.centerRight,
@@ -106,12 +125,14 @@ class _SignInPageState extends State<SignInPage> {
               style: TextStyles.signButtonText,
             ),
             onPressed: () {
-              bloc.add(
-                SignIn(
-                  email: emailController.text,
-                  password: passwordController.text,
-                ),
-              );
+              if (_formKey.currentState!.validate()) {
+                bloc.add(
+                  SignIn(
+                    emailController.text,
+                    passwordController.text,
+                  ),
+                );
+              }
             },
           ),
         ],

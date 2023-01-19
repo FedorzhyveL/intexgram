@@ -6,12 +6,14 @@ class FormTextField extends StatelessWidget {
   final String label;
   final TextEditingController controller;
   final int maxLines;
+  final String? Function(String?)? validation;
 
   const FormTextField({
     super.key,
     required this.label,
     required this.controller,
     this.maxLines = 1,
+    required this.validation,
   });
 
   @override
@@ -26,15 +28,7 @@ class FormTextField extends StatelessWidget {
         maxLines: maxLines,
         keyboardType:
             maxLines == 1 ? TextInputType.text : TextInputType.multiline,
-        validator: (value) {
-          if (label == 'Description') {
-            return null;
-          }
-          if (value == null || value.isEmpty) {
-            return '$label incorrect';
-          }
-          return null;
-        },
+        validator: validation,
         decoration: InputDecoration(
           hintText: controller.text,
           label: Text(
