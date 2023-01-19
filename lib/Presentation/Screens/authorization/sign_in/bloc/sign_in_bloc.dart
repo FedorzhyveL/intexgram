@@ -39,11 +39,11 @@ class SignInBloc extends Bloc<SignInEvent, SignInState> {
     }
   }
 
-  Future<String?> validateEmail(String? email) async {
+  String? validateEmail(String? email) {
     if (email == null) return "Email shouldn't be empty";
 
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _format(email),
         password: '',
       );
@@ -55,23 +55,27 @@ class SignInBloc extends Bloc<SignInEvent, SignInState> {
       } else {
         if (e.code == 'user-disabled') {
           return "Email incorrect";
+        } else {
+          return 'Email or password incorrect';
         }
       }
     }
     return null;
   }
 
-  Future<String?> validatePassword(String? password) async {
+  String? validatePassword(String? password) {
     if (password == null) return "Password shouldn't be empty";
 
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      FirebaseAuth.instance.signInWithEmailAndPassword(
         email: '',
         password: _format(password),
       );
     } on FirebaseAuthException catch (e) {
       if (e.code == 'wrong-password') {
         return "Password incorrect";
+      } else {
+        return 'Email or password incorrect';
       }
     }
     return null;

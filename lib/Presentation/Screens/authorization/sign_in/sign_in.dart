@@ -75,24 +75,12 @@ class _SignInPageState extends State<SignInPage> {
                   FormTextField(
                     label: 'Email',
                     controller: emailController,
-                    validation: (email) {
-                      String? message;
-                      bloc
-                          .validateEmail(email)
-                          .then((value) => message = value);
-                      return message;
-                    },
+                    validation: (email) => bloc.validateEmail(email),
                   ),
                   FormTextField(
                     label: 'Password',
                     controller: passwordController,
-                    validation: (password) {
-                      String? message;
-                      bloc
-                          .validatePassword(password)
-                          .then((value) => message = value);
-                      return message;
-                    },
+                    validation: (password) => bloc.validatePassword(password),
                   ),
                 ],
               );
@@ -120,7 +108,10 @@ class _SignInPageState extends State<SignInPage> {
               'Log in',
               style: TextStyles.signButtonText,
             ),
-            onPressed: () {
+            onPressed: () async {
+              // (await bloc.validateEmail(emailController.text)) == null &&
+              //     (await bloc.validatePassword(passwordController.text)) ==
+              //         null
               if (_formKey.currentState!.validate()) {
                 bloc.add(
                   SignIn(
@@ -129,6 +120,11 @@ class _SignInPageState extends State<SignInPage> {
                   ),
                 );
               }
+              // else {
+              //   emailController.clear();
+              //   passwordController.clear();
+              //   _formKey.currentState!.reset();
+              // }
             },
           ),
         ],
