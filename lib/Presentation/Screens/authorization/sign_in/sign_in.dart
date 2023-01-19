@@ -37,9 +37,6 @@ class _SignInPageState extends State<SignInPage> {
       create: (context) => bloc,
       child: BlocBuilder<SignInBloc, SignInState>(
         builder: (context, state) {
-          if (state is WrongEmail || state is WrongPassword) {
-            _formKey.currentState!.reset();
-          }
           if (state is Succes) {
             serverLocator<FlutterRouter>().replace(const MainScreenRoute());
           }
@@ -76,13 +73,26 @@ class _SignInPageState extends State<SignInPage> {
       key: _formKey,
       child: Column(
         children: [
-          FormTextField(
-            label: 'Email',
-            controller: emailController,
-          ),
-          FormTextField(
-            label: 'Password',
-            controller: passwordController,
+          BlocConsumer<SignInBloc, SignInState>(
+            builder: (context, state) {
+              return Column(
+                children: [
+                  FormTextField(
+                    label: 'Email',
+                    controller: emailController,
+                  ),
+                  FormTextField(
+                    label: 'Password',
+                    controller: passwordController,
+                  ),
+                ],
+              );
+            },
+            listener: (context, state) {
+              if (state is WrongEmail || state is WrongPassword) {
+                _formKey.currentState!.reset();
+              }
+            },
           ),
           Container(
             alignment: Alignment.centerRight,
