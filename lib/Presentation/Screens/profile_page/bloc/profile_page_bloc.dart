@@ -37,8 +37,8 @@ class ProfilePageBloc extends Bloc<ProfilePageEvent, ProfilePageState> {
     on<ProfilePageEvent>(
       (event, emit) async {
         await event.when(
-          load: ((user) async => await _load(
-                user,
+          load: ((email) async => await _load(
+                email,
                 emit,
               )),
           subscribe: ((
@@ -72,7 +72,7 @@ class ProfilePageBloc extends Bloc<ProfilePageEvent, ProfilePageState> {
     );
   }
 
-  FutureOr<void> _getUser(
+  FutureOr<void> _load(
     String userEmail,
     Emitter<ProfilePageState> emit,
   ) async {
@@ -82,11 +82,11 @@ class ProfilePageBloc extends Bloc<ProfilePageEvent, ProfilePageState> {
         fromCache: false,
       ),
     );
-    final subscription = await isSubscribed(userEmail);
+    bool subscription = await isSubscribed(userEmail);
     return failureOrPerson.fold(
       (failure) => Failure,
       (user) async {
-        if (userEmail != FirebaseAuth.instance.currentUser!.email) {
+        if (user.email != FirebaseAuth.instance.currentUser!.email) {
           emit(
             Ready(
               user,
@@ -132,17 +132,14 @@ class ProfilePageBloc extends Bloc<ProfilePageEvent, ProfilePageState> {
   _subscribe(
     PersonEntity user,
     String currentUserEmail,
-    List<PostEntity>? posts,
+    List<PostEntity> posts,
     bool? isFollowing,
     Emitter<ProfilePageState> emit,
   ) async {
     try {
       await subscribe(SubscribeParams(userEmail: user.email));
-      if (posts == null) {
-        emit(UserReady(user, currentUserEmail, true));
-      } else {
-        emit(Ready(user, currentUserEmail, posts, true));
-      }
+
+      emit(Ready(user, currentUserEmail, posts, true));
     } catch (e) {
       log(e.toString());
     }
@@ -151,17 +148,14 @@ class ProfilePageBloc extends Bloc<ProfilePageEvent, ProfilePageState> {
   _unSubscribe(
     PersonEntity user,
     String currentUserEmail,
-    List<PostEntity>? posts,
+    List<PostEntity> posts,
     bool? isFollowing,
     Emitter<ProfilePageState> emit,
   ) async {
     try {
       await unSubscribe(UnSubscribeParams(userEmail: user.email));
-      if (posts == null) {
-        emit(UserReady(user, currentUserEmail, false));
-      } else {
-        emit(Ready(user, currentUserEmail, posts, false));
-      }
+
+      emit(Ready(user, currentUserEmail, posts, false));
     } catch (e) {
       log(e.toString());
     }

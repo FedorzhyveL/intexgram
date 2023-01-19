@@ -50,24 +50,14 @@ class _ProfilePageState extends State<ProfilePage>
       create: (context) => bloc,
       child: BlocBuilder<ProfilePageBloc, ProfilePageState>(
         builder: (context, state) {
-          if (state is Initial) bloc.add(GetUser(state.userEmail));
-          if (state is UserReady) {
-            bloc.add(
-              LoadGallery(
-                state.user,
-                state.isFollowing,
-              ),
-            );
+          if (state is Initial) bloc.add(Load(state.userEmail));
 
+          if (state is Ready) {
             return profilePage(state.user, state);
           } else {
-            if (state is Ready) {
-              return profilePage(state.user, state);
-            } else {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
           }
         },
       ),
@@ -272,7 +262,7 @@ class _ProfilePageState extends State<ProfilePage>
                         ProfileInformationRoute(user: user),
                       );
                       if (isChanged == true) {
-                        bloc.add(GetUser(user.email));
+                        bloc.add(Load(user.email));
                       }
                     },
                     label: 'Edit profile',
@@ -303,13 +293,13 @@ class _ProfilePageState extends State<ProfilePage>
                                     state.isFollowing,
                                   ),
                                 )
-                          : state is UserReady
+                          : state is Ready
                               ? state.isFollowing == true
                                   ? bloc.add(
                                       UnSubscribe(
                                         state.user,
                                         state.currentUserEmail,
-                                        null,
+                                        state.posts,
                                         state.isFollowing,
                                       ),
                                     )
@@ -317,7 +307,7 @@ class _ProfilePageState extends State<ProfilePage>
                                       Subscribe(
                                         state.user,
                                         state.currentUserEmail,
-                                        null,
+                                        state.posts,
                                         state.isFollowing,
                                       ),
                                     )
@@ -327,7 +317,7 @@ class _ProfilePageState extends State<ProfilePage>
                         ? state.isFollowing == true
                             ? 'Unsubscribe'
                             : 'Subscribe'
-                        : state is UserReady
+                        : state is Ready
                             ? state.isFollowing == true
                                 ? 'Unsubscribe'
                                 : 'Subscribe'
@@ -336,7 +326,7 @@ class _ProfilePageState extends State<ProfilePage>
                         ? state.isFollowing == true
                             ? Palette.profileButtonDefautColor
                             : Palette.profileButtonSecondColor
-                        : state is UserReady
+                        : state is Ready
                             ? state.isFollowing == true
                                 ? Palette.profileButtonDefautColor
                                 : Palette.profileButtonSecondColor
@@ -345,7 +335,7 @@ class _ProfilePageState extends State<ProfilePage>
                         ? state.isFollowing == true
                             ? Palette.textColor
                             : Palette.profileButtonDefautColor
-                        : state is UserReady
+                        : state is Ready
                             ? state.isFollowing == true
                                 ? Palette.textColor
                                 : Palette.profileButtonDefautColor
@@ -416,7 +406,7 @@ class _ProfilePageState extends State<ProfilePage>
           "Posts",
           state is Ready
               ? state.user.posts
-              : state is UserReady
+              : state is Ready
                   ? state.user.posts
                   : null,
         ),
@@ -434,7 +424,7 @@ class _ProfilePageState extends State<ProfilePage>
             "Followers",
             state is Ready
                 ? state.user.followers
-                : state is UserReady
+                : state is Ready
                     ? state.user.followers
                     : null,
           ),
@@ -453,7 +443,7 @@ class _ProfilePageState extends State<ProfilePage>
             "Following",
             state is Ready
                 ? state.user.following
-                : state is UserReady
+                : state is Ready
                     ? state.user.following
                     : null,
           ),
@@ -472,9 +462,8 @@ class _ProfilePageState extends State<ProfilePage>
         onRefresh: () {
           Future refreshBloc = bloc.stream.first;
           bloc.add(
-            LoadGallery(
-              state.user,
-              state.isFollowing,
+            Load(
+              state.currentUserEmail,
             ),
           );
           return refreshBloc;
@@ -486,7 +475,7 @@ class _ProfilePageState extends State<ProfilePage>
             crossAxisSpacing: 2.5,
             mainAxisSpacing: 2.5,
           ),
-          itemCount: state.user.posts,
+          itemCount: state.posts.length,
           itemBuilder: (BuildContext context, int index) {
             return GestureDetector(
               child: FittedBox(

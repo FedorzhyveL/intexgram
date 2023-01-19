@@ -4,7 +4,6 @@ import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:intexgram/Domain/usecases/person_use_cases/get_current_person_use_case.dart';
 import 'package:intexgram/Domain/usecases/person_use_cases/set_current_person_use_case.dart';
 import 'package:intexgram/Presentation/Routes/router.gr.dart';

@@ -39,11 +39,11 @@ class SignInBloc extends Bloc<SignInEvent, SignInState> {
     }
   }
 
-  String? validateEmail(String? email) {
+  Future<String?> validateEmail(String? email) async {
     if (email == null) return "Email shouldn't be empty";
 
     try {
-      FirebaseAuth.instance.signInWithEmailAndPassword(
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _format(email),
         password: '',
       );
@@ -63,11 +63,11 @@ class SignInBloc extends Bloc<SignInEvent, SignInState> {
     return null;
   }
 
-  String? validatePassword(String? password) {
+  Future<String?> validatePassword(String? password) async {
     if (password == null) return "Password shouldn't be empty";
 
     try {
-      FirebaseAuth.instance.signInWithEmailAndPassword(
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: '',
         password: _format(password),
       );

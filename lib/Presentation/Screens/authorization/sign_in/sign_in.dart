@@ -75,12 +75,24 @@ class _SignInPageState extends State<SignInPage> {
                   FormTextField(
                     label: 'Email',
                     controller: emailController,
-                    validation: (email) => bloc.validateEmail(email),
+                    validation: (email) {
+                      String? message;
+                      bloc
+                          .validateEmail(email)
+                          .then((value) => message = value);
+                      return message;
+                    },
                   ),
                   FormTextField(
                     label: 'Password',
                     controller: passwordController,
-                    validation: (password) => bloc.validatePassword(password),
+                    validation: (password) {
+                      String? message;
+                      bloc
+                          .validatePassword(password)
+                          .then((value) => message = value);
+                      return message;
+                    },
                   ),
                 ],
               );
