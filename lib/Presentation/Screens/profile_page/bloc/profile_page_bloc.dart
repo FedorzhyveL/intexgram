@@ -37,13 +37,8 @@ class ProfilePageBloc extends Bloc<ProfilePageEvent, ProfilePageState> {
     on<ProfilePageEvent>(
       (event, emit) async {
         await event.when(
-          getUser: ((userEmail) async => await _getUser(
-                userEmail,
-                emit,
-              )),
-          loadGallery: ((user, isFollowing) async => await _loadGallery(
+          load: ((user) async => await _load(
                 user,
-                isFollowing,
                 emit,
               )),
           subscribe: ((
@@ -87,47 +82,42 @@ class ProfilePageBloc extends Bloc<ProfilePageEvent, ProfilePageState> {
         fromCache: false,
       ),
     );
-
+    final subscription = await isSubscribed(userEmail);
     return failureOrPerson.fold(
       (failure) => Failure,
       (user) async {
         if (userEmail != FirebaseAuth.instance.currentUser!.email) {
           emit(
-            UserReady(
+            Ready(
               user,
               FirebaseAuth.instance.currentUser!.email!,
-              await isSubscribed(userEmail),
+              [],
+              subscription,
             ),
           );
         } else {
           emit(
-            UserReady(
+            Ready(
               user,
               FirebaseAuth.instance.currentUser!.email!,
-              null,
+              [],
+              subscription,
             ),
           );
         }
+        List<PostEntity> userPosts = [];
+        final listOrFailure =
+            await getUserPosts(GetUserPostsParams(email: user.email));
+        listOrFailure.fold((l) => null, (posts) => userPosts = posts);
+        emit(
+          Ready(
+            user,
+            FirebaseAuth.instance.currentUser!.email!,
+            userPosts,
+            subscription,
+          ),
+        );
       },
-    );
-  }
-
-  FutureOr<void> _loadGallery(
-    PersonEntity user,
-    bool? isFollowing,
-    Emitter<ProfilePageState> emit,
-  ) async {
-    List<PostEntity> userPosts = [];
-    final listOrFailure =
-        await getUserPosts(GetUserPostsParams(email: user.email));
-    listOrFailure.fold((l) => null, (posts) => userPosts = posts);
-    emit(
-      Ready(
-        user,
-        FirebaseAuth.instance.currentUser!.email!,
-        userPosts,
-        isFollowing,
-      ),
     );
   }
 
