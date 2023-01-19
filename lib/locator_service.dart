@@ -2,7 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:intexgram/Data/datasources/comment_remote_datasource.dart';
 import 'package:intexgram/Data/datasources/local_datasource.dart';
 import 'package:intexgram/Data/datasources/person_remote_datasource.dart';
-import 'package:intexgram/Data/datasources/post_remote_datasourcs.dart';
+import 'package:intexgram/Data/datasources/post_remote_datasource.dart';
 import 'package:intexgram/Data/repositories/comments_repository_impl.dart';
 import 'package:intexgram/Data/repositories/person_repository_impl.dart';
 import 'package:intexgram/Data/repositories/post_repository_impl.dart';
@@ -11,9 +11,8 @@ import 'package:intexgram/Domain/repositories/person_repository.dart';
 import 'package:intexgram/Domain/repositories/post_repository.dart';
 import 'package:intexgram/Domain/usecases/comments_use_cases/add_comment_use_case.dart';
 import 'package:intexgram/Domain/usecases/comments_use_cases/get_comments_use_case.dart';
-import 'package:intexgram/Domain/usecases/person_use_cases/add_photo_to_db_use_case.dart';
+import 'package:intexgram/Domain/usecases/person_use_cases/change_photo_use_case.dart';
 import 'package:intexgram/Domain/usecases/person_use_cases/chek_subscription_use_case.dart';
-import 'package:intexgram/Domain/usecases/person_use_cases/delete_user_photo_use_case.dart';
 import 'package:intexgram/Domain/usecases/person_use_cases/get_all_persons_use_case.dart';
 import 'package:intexgram/Domain/usecases/person_use_cases/get_current_person_use_case.dart';
 import 'package:intexgram/Domain/usecases/person_use_cases/get_persons_from_collection_use_case.dart';
@@ -41,13 +40,10 @@ Future<void> init() async {
   //UseCases
   //Person
   serverLocator
-      .registerLazySingleton(() => AddPhotoToDbUseCase(serverLocator()));
+      .registerLazySingleton(() => ChangePhotoUseCase(serverLocator()));
 
   serverLocator
       .registerLazySingleton(() => CheckSubscriptionUseCase(serverLocator()));
-
-  serverLocator
-      .registerLazySingleton(() => DeleteUserPhotoUseCase(serverLocator()));
 
   serverLocator
       .registerLazySingleton(() => GetAllPersonsUseCase(serverLocator()));
