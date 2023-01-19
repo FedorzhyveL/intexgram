@@ -7,21 +7,26 @@ part 'profile_page_event.freezed.dart';
 
 @freezed
 class ProfilePageEvent with _$ProfilePageEvent {
-  const factory ProfilePageEvent.load(
+  const factory ProfilePageEvent.getUser(
     String userEmail,
-  ) = Load;
+  ) = GetUser;
+
+  const factory ProfilePageEvent.loadGallery(
+    PersonEntity user,
+    bool? isFollowing,
+  ) = LoadGallery;
 
   const factory ProfilePageEvent.subscribe(
     PersonEntity user,
     String currentUserEmail,
-    List<PostEntity> posts,
+    List<PostEntity>? posts,
     bool? isFollowing,
   ) = Subscribe;
 
   const factory ProfilePageEvent.unSubscribe(
     PersonEntity user,
     String currentUserEmail,
-    List<PostEntity> posts,
+    List<PostEntity>? posts,
     bool? isFollowing,
   ) = UnSubscribe;
 }

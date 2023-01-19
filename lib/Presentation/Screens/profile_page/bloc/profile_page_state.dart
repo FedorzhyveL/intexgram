@@ -11,6 +11,12 @@ class ProfilePageState with _$ProfilePageState {
     String userEmail,
   ) = Initial;
 
+  const factory ProfilePageState.userReady(
+    PersonEntity user,
+    String currentUserEmail,
+    bool? isFollowing,
+  ) = UserReady;
+
   const factory ProfilePageState.ready(
     PersonEntity user,
     String currentUserEmail,
