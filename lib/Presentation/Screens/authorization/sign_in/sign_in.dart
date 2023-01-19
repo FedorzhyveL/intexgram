@@ -27,7 +27,10 @@ class _SignInPageState extends State<SignInPage> {
   late final SignInBloc bloc;
   @override
   void initState() {
-    bloc = SignInBloc();
+    bloc = SignInBloc(
+      emailController,
+      passwordController,
+    );
     super.initState();
   }
 
@@ -35,24 +38,31 @@ class _SignInPageState extends State<SignInPage> {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => bloc,
-      child: BlocBuilder<SignInBloc, SignInState>(
-        builder: (context, state) {
+      child: BlocConsumer<SignInBloc, SignInState>(
+        listener: (context, state) {
           if (state is Succes) {
             serverLocator<FlutterRouter>().replace(const MainScreenRoute());
           }
-          return Scaffold(
-            resizeToAvoidBottomInset: false,
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  formLabel(),
-                  logInForm(),
-                  const OrDivider(),
-                  const SignButton(label: 'Sign up'),
-                ],
-              ),
-            ),
+        },
+        builder: (context, state) {
+          return state.when(
+            initial: (emailController, passwordController) {
+              return Scaffold(
+                resizeToAvoidBottomInset: false,
+                body: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      formLabel(),
+                      logInForm(state),
+                      const OrDivider(),
+                      const SignButton(label: 'Sign up'),
+                    ],
+                  ),
+                ),
+              );
+            },
+            succes: () => Container(),
           );
         },
       ),
@@ -68,64 +78,50 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 
-  Widget logInForm() {
-    return Form(
-      key: _formKey,
-      child: Column(
-        children: [
-          BlocConsumer<SignInBloc, SignInState>(
-            builder: (context, state) {
-              return Column(
-                children: [
-                  FormTextField(
-                    label: 'Email',
-                    controller: emailController,
+  Widget logInForm(SignInState state) {
+    if (state is Initial) {
+      return Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            FormTextField(
+              label: 'Email',
+              controller: emailController,
+            ),
+            FormTextField(
+              label: 'Password',
+              controller: passwordController,
+            ),
+            Container(
+              alignment: Alignment.centerRight,
+              margin: const EdgeInsets.only(right: 16),
+              child: TextButton(
+                onPressed: () {},
+                child: Text(
+                  'Forgot password?',
+                  style: TextStyles.text.copyWith(
+                    color: Palette.signTextColor,
+                    fontSize: 15,
                   ),
-                  FormTextField(
-                    label: 'Password',
-                    controller: passwordController,
-                  ),
-                ],
-              );
-            },
-            listener: (context, state) {
-              if (state is WrongEmail || state is WrongPassword) {
-                _formKey.currentState!.reset();
-              }
-            },
-          ),
-          Container(
-            alignment: Alignment.centerRight,
-            margin: const EdgeInsets.only(right: 16),
-            child: TextButton(
-              onPressed: () {},
-              child: Text(
-                'Forgot password?',
-                style: TextStyles.text.copyWith(
-                  color: Palette.signTextColor,
-                  fontSize: 15,
                 ),
               ),
             ),
-          ),
-          MaterialButton(
-            padding: const EdgeInsets.all(5),
-            color: Palette.signButtonColor,
-            child: const Text(
-              'Log in',
-              style: TextStyles.signButtonText,
+            MaterialButton(
+              padding: const EdgeInsets.all(5),
+              color: Palette.signButtonColor,
+              child: const Text(
+                'Log in',
+                style: TextStyles.signButtonText,
+              ),
+              onPressed: () {
+                bloc.add(SignIn(state));
+              },
             ),
-            onPressed: () {
-              bloc.add(
-                SignIn(
-                  email: emailController.text,
-                  password: passwordController.text,
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    } else {
+      return Container();
+    }
   }
 }

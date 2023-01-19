@@ -2,18 +2,21 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 import 'sign_in_event.dart';
 import 'sign_in_state.dart';
 
 class SignInBloc extends Bloc<SignInEvent, SignInState> {
-  SignInBloc() : super(const Initial()) {
+  SignInBloc(
+    TextEditingController emailController,
+    TextEditingController passwordController,
+  ) : super(Initial(emailController, passwordController)) {
     on<SignInEvent>(
       (event, emit) async {
         await event.when(
-          signIn: (email, password) async => await _signInToApp(
-            email,
-            password,
+          signIn: (state) async => await _signInToApp(
+            state,
             emit,
           ),
         );
@@ -22,22 +25,20 @@ class SignInBloc extends Bloc<SignInEvent, SignInState> {
   }
 
   FutureOr<void> _signInToApp(
-    String email,
-    String password,
+    SignInState state,
     Emitter<SignInState> emit,
   ) async {
-    try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: format(email),
-        password: format(password),
-      );
-      emit(const Succes());
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        emit(const WrongEmail());
-      } else if (e.code == 'wrong-password') {
-        emit(const WrongPassword());
-      } else {}
+    if (state is Initial) {
+      try {
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: format(state.emailController.text),
+          password: format(state.passwordController.text),
+        );
+        emit(const Succes());
+      } on FirebaseAuthException catch (_) {
+        state.emailController.clear();
+        state.passwordController.clear();
+      }
     }
   }
 
