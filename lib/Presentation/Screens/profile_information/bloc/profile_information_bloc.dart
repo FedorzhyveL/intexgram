@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intexgram/Domain/entities/person_entity.dart';
 import 'package:intexgram/Domain/usecases/person_use_cases/change_photo_use_case.dart';
 import 'package:intexgram/Domain/usecases/person_use_cases/update_current_person_use_case.dart';
@@ -66,10 +67,8 @@ class ProfileInformationBloc
             ),
           );
           isChanged = true;
-          emit(Exit(isChanged));
-        } else {
-          emit(Exit(isChanged));
         }
+        emit(Exit(isChanged));
       } else {
         await changePhoto(ChangePhotoParams(photo: newPhoto));
 
@@ -86,6 +85,38 @@ class ProfileInformationBloc
         emit(Exit(isChanged));
       }
     }
+  }
+
+  Future<String?> validateNickName(String? nickName) async {
+    if (nickName == null) return "Nick name shouldn exist";
+
+    try {
+      await FirebaseFirestore.instance
+          .collection("Users")
+          .where(
+            "Nick Name",
+            isEqualTo: nickName,
+          )
+          .get()
+          .then(
+        ((value) {
+          for (var doc in value.docs) {
+            if (doc.get("Nick Name") == nickName) {
+              return "This nick name is already in use";
+            }
+          }
+        }),
+      );
+    } catch (e) {
+      return "Something went wrong";
+    }
+    return null;
+  }
+
+  String? validateUserName(String? userName) {
+    if (userName == null) return "User name should exist";
+
+    return null;
   }
 
   format(String text) {

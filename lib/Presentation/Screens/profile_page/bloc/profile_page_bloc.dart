@@ -37,13 +37,36 @@ class ProfilePageBloc extends Bloc<ProfilePageEvent, ProfilePageState> {
     on<ProfilePageEvent>(
       (event, emit) async {
         await event.when(
-          load: (user) async => await _load(user, emit),
-          subscribe: (user, currentUserEmail, posts, isSubscribed) async =>
+          load: ((email) async => await _load(
+                email,
+                emit,
+              )),
+          subscribe: ((
+            user,
+            currentUserEmail,
+            posts,
+            isSubscribed,
+          ) async =>
               await _subscribe(
-                  user, currentUserEmail, posts, isSubscribed, emit),
-          unSubscribe: (user, currentUserEmail, posts, isSubscribed) async =>
+                user,
+                currentUserEmail,
+                posts,
+                isSubscribed,
+                emit,
+              )),
+          unSubscribe: ((
+            user,
+            currentUserEmail,
+            posts,
+            isSubscribed,
+          ) async =>
               await _unSubscribe(
-                  user, currentUserEmail, posts, isSubscribed, emit),
+                user,
+                currentUserEmail,
+                posts,
+                isSubscribed,
+                emit,
+              )),
         );
       },
     );
@@ -59,23 +82,29 @@ class ProfilePageBloc extends Bloc<ProfilePageEvent, ProfilePageState> {
         fromCache: false,
       ),
     );
-    bool subscription = false;
+    bool subscription = await isSubscribed(userEmail);
     return failureOrPerson.fold(
       (failure) => Failure,
       (user) async {
-        if (userEmail != FirebaseAuth.instance.currentUser!.email) {
-          subscription = await isSubscribed(userEmail);
+        if (user.email != FirebaseAuth.instance.currentUser!.email) {
+          emit(
+            Ready(
+              user,
+              FirebaseAuth.instance.currentUser!.email!,
+              [],
+              subscription,
+            ),
+          );
+        } else {
+          emit(
+            Ready(
+              user,
+              FirebaseAuth.instance.currentUser!.email!,
+              [],
+              subscription,
+            ),
+          );
         }
-
-        emit(
-          Ready(
-            user,
-            FirebaseAuth.instance.currentUser!.email!,
-            [],
-            subscription,
-          ),
-        );
-
         List<PostEntity> userPosts = [];
         final listOrFailure =
             await getUserPosts(GetUserPostsParams(email: user.email));
@@ -109,6 +138,7 @@ class ProfilePageBloc extends Bloc<ProfilePageEvent, ProfilePageState> {
   ) async {
     try {
       await subscribe(SubscribeParams(userEmail: user.email));
+
       emit(Ready(user, currentUserEmail, posts, true));
     } catch (e) {
       log(e.toString());
@@ -124,6 +154,7 @@ class ProfilePageBloc extends Bloc<ProfilePageEvent, ProfilePageState> {
   ) async {
     try {
       await unSubscribe(UnSubscribeParams(userEmail: user.email));
+
       emit(Ready(user, currentUserEmail, posts, false));
     } catch (e) {
       log(e.toString());

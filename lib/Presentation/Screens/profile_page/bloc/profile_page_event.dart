@@ -8,7 +8,7 @@ part 'profile_page_event.freezed.dart';
 @freezed
 class ProfilePageEvent with _$ProfilePageEvent {
   const factory ProfilePageEvent.load(
-    String userEmail,
+    String email,
   ) = Load;
 
   const factory ProfilePageEvent.subscribe(

@@ -23,6 +23,9 @@ class SearchPageBloc extends Bloc<SearchPageEvent, SearchPageState> {
         );
       },
     );
+
+    // on<GetAllUsersEvent>(_getAllUsers);
+    // on<UpdateListEvent>(_updateList);
   }
 
   FutureOr<void> _getAllUsers(

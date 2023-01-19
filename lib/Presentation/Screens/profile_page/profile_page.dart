@@ -50,16 +50,15 @@ class _ProfilePageState extends State<ProfilePage>
       create: (context) => bloc,
       child: BlocBuilder<ProfilePageBloc, ProfilePageState>(
         builder: (context, state) {
-          return state.when(
-            initial: ((userEmail) {
-              bloc.add(Load(userEmail));
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }),
-            ready: ((user, currentUserEmail, posts, isFollowing) =>
-                profilePage(user, state)),
-          );
+          if (state is Initial) bloc.add(Load(state.userEmail));
+
+          if (state is Ready) {
+            return profilePage(state.user, state);
+          } else {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
         },
       ),
     );
@@ -463,7 +462,9 @@ class _ProfilePageState extends State<ProfilePage>
         onRefresh: () {
           Future refreshBloc = bloc.stream.first;
           bloc.add(
-            Load(state.user.email),
+            Load(
+              state.currentUserEmail,
+            ),
           );
           return refreshBloc;
         },

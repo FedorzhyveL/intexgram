@@ -75,18 +75,34 @@ class _SignUpPageState extends State<SignUpPage> {
           FormTextField(
             label: 'Email',
             controller: emailController,
+            validation: (email) {
+              String? message;
+              bloc.validateEmail(email).then((value) => message = value);
+              return message;
+            },
           ),
           FormTextField(
             label: 'Password',
             controller: passwordController,
+            validation: (password) {
+              String? message;
+              bloc.validatePassword(password).then((value) => message = value);
+              return message;
+            },
           ),
           FormTextField(
             label: 'Nick name',
             controller: nickNameController,
+            validation: (nickName) {
+              String? message;
+              bloc.validateNickName(nickName).then((value) => message = value);
+              return message;
+            },
           ),
           FormTextField(
             label: 'User name',
             controller: userNameController,
+            validation: (userName) => bloc.validateUserName(userName),
           ),
           MaterialButton(
             padding: const EdgeInsets.all(5),
@@ -96,14 +112,16 @@ class _SignUpPageState extends State<SignUpPage> {
               style: TextStyles.signButtonText,
             ),
             onPressed: () {
-              bloc.add(
-                SignUp(
-                  emailController: emailController,
-                  passwordController: passwordController,
-                  userNameController: userNameController,
-                  nickNameController: nickNameController,
-                ),
-              );
+              if (_formKey.currentState!.validate()) {
+                bloc.add(
+                  SignUp(
+                    email: emailController.text,
+                    password: passwordController.text,
+                    userName: userNameController.text,
+                    nickName: nickNameController.text,
+                  ),
+                );
+              }
             },
           ),
         ],

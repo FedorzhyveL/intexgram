@@ -104,6 +104,7 @@ class _AddPostPageState extends State<AddPostPage> {
                     label: "Description",
                     controller: descriptionController,
                     maxLines: 100,
+                    validation: (description) => null,
                   ),
                 ),
                 SizedBox(

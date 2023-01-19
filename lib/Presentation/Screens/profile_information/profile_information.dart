@@ -146,15 +146,25 @@ class _ProfileInformationState extends State<ProfileInformation> {
                       FormTextField(
                         label: "Nick name",
                         controller: nickNameController,
+                        validation: (nickName) {
+                          String? message;
+                          bloc
+                              .validateNickName(nickName)
+                              .then((value) => message = value);
+                          return message;
+                        },
                       ),
                       FormTextField(
                         label: "User name",
                         controller: userNameController,
+                        validation: (userName) =>
+                            bloc.validateUserName(userName),
                       ),
                       FormTextField(
                         label: "Description",
                         controller: descriptionController,
                         maxLines: 5,
+                        validation: (description) => null,
                       ),
                     ],
                   ),
