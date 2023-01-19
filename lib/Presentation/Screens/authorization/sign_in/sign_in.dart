@@ -97,11 +97,7 @@ class _SignInPageState extends State<SignInPage> {
                 ],
               );
             },
-            listener: (context, state) {
-              // if (state is WrongEmail || state is WrongPassword) {
-              //   _formKey.currentState!.reset();
-              // }
-            },
+            listener: (context, state) {},
           ),
           Container(
             alignment: Alignment.centerRight,
