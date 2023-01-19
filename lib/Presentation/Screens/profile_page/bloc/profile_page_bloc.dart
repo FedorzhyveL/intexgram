@@ -86,25 +86,19 @@ class ProfilePageBloc extends Bloc<ProfilePageEvent, ProfilePageState> {
     return failureOrPerson.fold(
       (failure) => Failure,
       (user) async {
-        if (user.email != FirebaseAuth.instance.currentUser!.email) {
-          emit(
-            Ready(
-              user,
-              FirebaseAuth.instance.currentUser!.email!,
-              [],
-              subscription,
-            ),
-          );
-        } else {
-          emit(
-            Ready(
-              user,
-              FirebaseAuth.instance.currentUser!.email!,
-              [],
-              subscription,
-            ),
-          );
+        if (userEmail != FirebaseAuth.instance.currentUser!.email) {
+          subscription = await isSubscribed(userEmail);
         }
+
+        emit(
+          Ready(
+            user,
+            FirebaseAuth.instance.currentUser!.email!,
+            [],
+            subscription,
+          ),
+        );
+
         List<PostEntity> userPosts = [];
         final listOrFailure =
             await getUserPosts(GetUserPostsParams(email: user.email));
