@@ -11,6 +11,13 @@ class CommentsPageState with _$CommentsPageState {
     required PostEntity post,
   }) = Initial;
 
+  const factory CommentsPageState.loading(
+    PostEntity post,
+    List<CommentEntity> comments,
+    PersonEntity currentUser,
+    bool allowPublish,
+  ) = Loading;
+
   const factory CommentsPageState.loaded({
     required PostEntity post,
     required List<CommentEntity> comments,

@@ -46,143 +46,149 @@ class _CommentsPageState extends State<CommentsPage> {
       create: (context) => bloc,
       child: BlocBuilder<CommentsPageBloc, CommentsPageState>(
         builder: (context, state) {
-          return state.when(
-            initial: ((post) {
-              bloc.add(LoadDescription(post: post));
-              return content(state);
-            }),
-            loaded: ((post, comments, currentUser, allowPublish) =>
-                content(state)),
+          return Scaffold(
+            appBar: AppBar(
+              backgroundColor: Palette.appBarColor,
+              automaticallyImplyLeading: false,
+              leading: IconButton(
+                onPressed: () {
+                  serverLocator<FlutterRouter>().pop();
+                },
+                icon: const Icon(
+                  Icons.arrow_back_rounded,
+                  size: 30,
+                  color: Palette.appBarIconColor,
+                ),
+              ),
+              title: const Text(
+                "Comments",
+                style: TextStyles.appBarText,
+              ),
+            ),
+            body: state.when(
+              initial: (post) => const Center(
+                child: CircularProgressIndicator(),
+              ),
+              loading: (post, comments, currentUser, allowPublish) =>
+                  commentsList(
+                      post, comments, currentUser, allowPublish, state),
+              loaded: (post, comments, currentUser, allowPublish) =>
+                  commentsList(
+                      post, comments, currentUser, allowPublish, state),
+            ),
           );
         },
       ),
     );
   }
 
-  Widget content(CommentsPageState state) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Palette.appBarColor,
-        automaticallyImplyLeading: false,
-        leading: IconButton(
-          onPressed: () {
-            serverLocator<FlutterRouter>().pop();
-          },
-          icon: const Icon(
-            Icons.arrow_back_rounded,
-            size: 30,
-            color: Palette.appBarIconColor,
-          ),
-        ),
-        title: const Text(
-          "Comments",
-          style: TextStyles.appBarText,
-        ),
+  Widget commentsList(
+    PostEntity post,
+    List<CommentEntity> comments,
+    PersonEntity currentUser,
+    bool allowPublish,
+    CommentsPageState state,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        vertical: 5,
+        horizontal: 10,
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: 5,
-          horizontal: 10,
-        ),
-        child: state is Loaded
-            ? Column(
+      child: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: comments.length,
+              itemBuilder: (context, index) {
+                if (index == 0) {
+                  return Column(
+                    children: [
+                      comment(
+                        comments[0],
+                        currentUser,
+                        state,
+                      ),
+                      const Divider(
+                        height: 1,
+                        color: Palette.profileUnselectedTabsColor,
+                      ),
+                    ],
+                  );
+                } else {
+                  return comment(
+                    comments[index],
+                    currentUser,
+                    state,
+                  );
+                }
+              },
+            ),
+          ),
+          const Divider(height: 1),
+          SizedBox(
+            height: 80,
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Expanded(
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: state.comments.length,
-                      itemBuilder: (context, index) {
-                        if (index == 0) {
-                          return Column(
-                            children: [
-                              comment(
-                                state.comments[0],
-                                state.currentUser,
-                                state,
-                              ),
-                              const Divider(
-                                height: 1,
-                                color: Palette.profileUnselectedTabsColor,
-                              ),
-                            ],
-                          );
-                        } else {
-                          return comment(
-                            state.comments[index],
-                            state.currentUser,
-                            state,
-                          );
-                        }
-                      },
+                  Padding(
+                    padding: const EdgeInsets.only(right: 10.0),
+                    child: CircleAvatar(
+                      backgroundImage: CachedNetworkImageProvider(
+                          currentUser.profilePicturePath),
+                      radius: 30,
                     ),
                   ),
-                  const Divider(height: 1),
-                  SizedBox(
-                    height: 80,
-                    child: IntrinsicHeight(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(right: 10.0),
-                            child: CircleAvatar(
-                              backgroundImage: CachedNetworkImageProvider(
-                                  state.currentUser.profilePicturePath),
-                              radius: 30,
-                            ),
+                  Expanded(
+                    child: TextField(
+                      maxLines: null,
+                      controller: textEditingController,
+                      decoration: InputDecoration(
+                        hintText: "Comment as\n${currentUser.nickName}",
+                        border: InputBorder.none,
+                      ),
+                      onChanged: (value) => bloc.add(
+                        CommentValueChanged(
+                          currentState: state,
+                          value: value,
+                        ),
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      if (allowPublish) {
+                        bloc.add(
+                          AddComment(
+                            post: state.post,
+                            text: textEditingController.text,
                           ),
-                          Expanded(
-                            child: TextField(
-                              maxLines: null,
-                              controller: textEditingController,
-                              decoration: InputDecoration(
-                                hintText:
-                                    "Comment as\n${state.currentUser.nickName}",
-                                border: InputBorder.none,
-                              ),
-                              onChanged: (value) => bloc.add(
-                                CommentValueChanged(
-                                  currentState: state,
-                                  value: value,
-                                ),
-                              ),
-                            ),
+                        );
+                        textEditingController.clear();
+                        bloc.add(
+                          CommentValueChanged(
+                            currentState: state,
+                            value: textEditingController.text,
                           ),
-                          TextButton(
-                            onPressed: () {
-                              bloc.add(
-                                AddComment(
-                                  post: state.post,
-                                  text: textEditingController.text,
-                                ),
-                              );
-                              textEditingController.clear();
-                              bloc.add(
-                                CommentValueChanged(
-                                  currentState: state,
-                                  value: textEditingController.text,
-                                ),
-                              );
-                              bloc.add(LoadDescription(post: state.post));
-                            },
-                            child: Text(
-                              "Publish",
-                              style: TextStyles.text.copyWith(
-                                color: state.allowPublish == false
-                                    ? Palette.disabledButtonColor
-                                    : Palette.abledButtonColor,
-                              ),
-                            ),
-                          ),
-                        ],
+                        );
+                        bloc.add(LoadDescription(state.post, state));
+                      }
+                    },
+                    child: Text(
+                      "Publish",
+                      style: TextStyles.text.copyWith(
+                        color: allowPublish == false
+                            ? Palette.disabledButtonColor
+                            : Palette.abledButtonColor,
                       ),
                     ),
                   ),
                 ],
-              )
-            : const Center(
-                child: CircularProgressIndicator(),
               ),
+            ),
+          ),
+        ],
       ),
     );
   }

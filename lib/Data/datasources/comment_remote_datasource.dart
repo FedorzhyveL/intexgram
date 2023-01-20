@@ -30,15 +30,19 @@ class CommentRemoteDataSourceImpl implements CommentRemoteDataSource {
         for (var comment in value.docs) {
           GetCurrentPersonUseCase getCurrentPerson =
               GetCurrentPersonUseCase(serverLocator());
-          final user = await getCurrentPerson(comment.get("user id"));
+          final user = await getCurrentPerson(GetCurrentPersonParams(
+              email: comment.get("user id"), fromCache: false));
           Timestamp time = comment.get("creation time");
-          comments.add(
-            CommentModel(
-              user: user,
-              creationTime: DateTime.fromMillisecondsSinceEpoch(
-                  time.millisecondsSinceEpoch),
-              text: comment.get("text"),
-              id: comment.get("id"),
+          user.fold(
+            (l) => null,
+            (user) => comments.add(
+              CommentModel(
+                user: user,
+                creationTime: DateTime.fromMillisecondsSinceEpoch(
+                    time.millisecondsSinceEpoch),
+                text: comment.get("text"),
+                id: comment.get("id"),
+              ),
             ),
           );
         }

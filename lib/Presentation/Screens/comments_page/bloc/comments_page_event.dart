@@ -7,12 +7,13 @@ part 'comments_page_event.freezed.dart';
 
 @freezed
 abstract class CommentsPageEvent with _$CommentsPageEvent {
-  const factory CommentsPageEvent.loadDescription({
-    required PostEntity post,
-  }) = LoadDescription;
+  const factory CommentsPageEvent.loadDescription(
+    PostEntity post,
+    CommentsPageState state,
+  ) = LoadDescription;
 
   const factory CommentsPageEvent.commentValueChanged({
-    required Loaded currentState,
+    required CommentsPageState currentState,
     required String value,
   }) = CommentValueChanged;
 

@@ -16,18 +16,19 @@ class CommentsPageBloc extends Bloc<CommentsPageEvent, CommentsPageState> {
   final GetCurrentPersonUseCase getCurrentPerson;
   final GetCommentsUseCase getComments;
   final AddCommentUseCase addComment;
-  final PostEntity post;
+
   CommentsPageBloc(
     this.getCurrentPerson,
     this.addComment,
     this.getComments,
-    this.post,
+    PostEntity post,
   ) : super(Initial(post: post)) {
     on<CommentsPageEvent>(
       (event, emit) async {
         await event.when(
-          loadDescription: (post) async => await _loadDescription(
+          loadDescription: (post, state) async => await _loadDescription(
             post,
+            state,
             emit,
           ),
           commentValueChanged: (state, value) async =>
@@ -44,10 +45,12 @@ class CommentsPageBloc extends Bloc<CommentsPageEvent, CommentsPageState> {
         );
       },
     );
+    add(LoadDescription(post, state));
   }
 
   FutureOr<void> _loadDescription(
     PostEntity post,
+    CommentsPageState state,
     Emitter<CommentsPageState> emit,
   ) async {
     List<CommentEntity> comments = [];
@@ -67,52 +70,89 @@ class CommentsPageBloc extends Bloc<CommentsPageEvent, CommentsPageState> {
     );
     late PersonEntity user;
     userOrFailure.fold((l) => {}, ((result) => user = result));
-    emit(
-      Loaded(
-        post: post,
-        comments: comments,
-        currentUser: user,
-        allowPublish: false,
-      ),
-    );
+
+    if (state is Loaded) {
+      emit(
+        Loading(
+          state.post,
+          state.comments,
+          state.currentUser,
+          state.allowPublish,
+        ),
+      );
+    } else {
+      emit(
+        Loading(
+          post,
+          comments,
+          user,
+          false,
+        ),
+      );
+    }
+
     final commentsOrFailure = await getComments(GetCommentsParams(post));
     commentsOrFailure.fold(
         (l) => null, (commentsList) => comments.addAll(commentsList));
 
     emit(
       Loaded(
+        post: post,
         comments: comments,
         currentUser: user,
         allowPublish: false,
-        post: post,
       ),
     );
   }
 
   FutureOr<void> _commentValueChanged(
-    Loaded state,
+    CommentsPageState state,
     String value,
     Emitter<CommentsPageState> emit,
   ) {
     if (value.isEmpty) {
-      emit(
-        Loaded(
-          comments: state.comments,
-          currentUser: state.currentUser,
-          allowPublish: false,
-          post: post,
-        ),
-      );
+      if (state is Loaded) {
+        emit(
+          Loaded(
+            comments: state.comments,
+            currentUser: state.currentUser,
+            allowPublish: false,
+            post: state.post,
+          ),
+        );
+      }
+      if (state is Loading) {
+        emit(
+          Loading(
+            state.post,
+            state.comments,
+            state.currentUser,
+            false,
+          ),
+        );
+      }
     }
     if (value.isNotEmpty) {
-      emit(
-        Loaded(
-          comments: state.comments,
-          currentUser: state.currentUser,
-          allowPublish: false,
-          post: post,
-        ),
-      );
+      if (state is Loaded) {
+        emit(
+          Loaded(
+            post: state.post,
+            comments: state.comments,
+            currentUser: state.currentUser,
+            allowPublish: true,
+          ),
+        );
+      }
+      if (state is Loading) {
+        emit(
+          Loading(
+            state.post,
+            state.comments,
+            state.currentUser,
+            true,
+          ),
+        );
+      }
     }
   }
 
