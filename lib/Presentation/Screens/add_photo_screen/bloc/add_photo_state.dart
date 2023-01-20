@@ -5,6 +5,8 @@ part 'add_photo_state.freezed.dart';
 @freezed
 class AddPhotoState with _$AddPhotoState {
   const factory AddPhotoState.initial() = Initial;
-  const factory AddPhotoState.camerasReady(
-      {required CameraController controller}) = CamerasReady;
+
+  const factory AddPhotoState.camerasReady({
+    required CameraController controller,
+  }) = CamerasReady;
 }

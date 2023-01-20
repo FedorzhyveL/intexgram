@@ -34,7 +34,7 @@ class _MainScreenState extends State<MainScreen> {
         builder: (context, state) {
           return state.when(
             initial: () => const LoadingScreen(),
-            userLoaded: (user) => AutoTabsRouter(
+            userLoaded: (user, cameraController) => AutoTabsRouter(
               routes: [
                 const HomePageRoute(),
                 const SearchPageRoute(),
@@ -53,7 +53,16 @@ class _MainScreenState extends State<MainScreen> {
                     showUnselectedLabels: false,
                     type: BottomNavigationBarType.fixed,
                     currentIndex: tabsRouter.activeIndex,
-                    onTap: (value) {
+                    onTap: (value) async {
+                      if (value == 2) {
+                        cameraController.resumePreview();
+                      } else {
+                        if (cameraController.value.isInitialized) {
+                          try {
+                            cameraController.pausePreview();
+                          } catch (_) {}
+                        }
+                      }
                       tabsRouter.setActiveIndex(value);
                     },
                     items: [

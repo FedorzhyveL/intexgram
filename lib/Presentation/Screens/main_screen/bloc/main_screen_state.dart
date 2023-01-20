@@ -1,3 +1,4 @@
+import 'package:camera/camera.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:intexgram/Domain/entities/person_entity.dart';
 
@@ -9,5 +10,6 @@ class MainScreenState with _$MainScreenState {
 
   const factory MainScreenState.userLoaded(
     PersonEntity user,
+    CameraController cameraController,
   ) = UserLoaded;
 }
