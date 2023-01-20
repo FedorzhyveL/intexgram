@@ -39,11 +39,18 @@ class _AddPostPageState extends State<AddPostPage> {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => bloc,
-      child: BlocBuilder<AddPostBloc, AddPostState>(
+      child: BlocConsumer<AddPostBloc, AddPostState>(
+        listener: (context, state) {
+          if (state is Loaded) {
+            serverLocator<FlutterRouter>()
+                .replaceAll([const MainScreenRoute()]);
+          }
+        },
         builder: (context, state) {
           return state.when(
-            initial: ((photo) => content(state)),
-            loading: ((photo) => content(state)),
+            initial: (photo) => content(state),
+            loading: (photo) => content(state),
+            loaded: () => Container(),
           );
         },
       ),

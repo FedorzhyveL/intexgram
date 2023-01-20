@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
@@ -8,8 +7,6 @@ import 'package:intexgram/Domain/usecases/person_use_cases/change_photo_use_case
 import 'package:intexgram/Domain/usecases/post_use_cases/create_post_use_case.dart';
 import 'package:path/path.dart';
 
-import '../../../../locator_service.dart';
-import '../../../Routes/router.gr.dart';
 import 'add_post_event.dart';
 import 'add_post_state.dart';
 
@@ -51,9 +48,7 @@ class AddPostBloc extends Bloc<AddPostEvent, AddPostState> {
           creationTime: DateTime.now(),
         ),
       );
-      serverLocator<FlutterRouter>().replaceAll([const MainScreenRoute()]);
-    } catch (e) {
-      log(e.toString());
-    }
+      emit(const Loaded());
+    } catch (_) {}
   }
 }
