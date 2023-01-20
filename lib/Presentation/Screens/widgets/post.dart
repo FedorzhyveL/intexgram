@@ -28,32 +28,55 @@ class Post extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const SizedBox(height: 10),
+        //!Post owner information
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10.0),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundImage:
-                    CachedNetworkImageProvider(post.owner.profilePicturePath),
-              ),
-              const SizedBox(width: 5),
-              Flexible(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      post.owner.nickName,
-                      style: TextStyles.text.copyWith(fontSize: 15),
-                    ),
-                  ],
+          padding: const EdgeInsets.symmetric(
+            horizontal: 10.0,
+            vertical: 10,
+          ),
+          child: GestureDetector(
+            behavior: HitTestBehavior.deferToChild,
+            onTap: () {
+              if (post.owner.email !=
+                  FirebaseAuth.instance.currentUser!.email) {
+                serverLocator<FlutterRouter>().push(
+                  ProfilePageRoute(
+                    userEmail: post.owner.email,
+                  ),
+                );
+              } else {
+                serverLocator<FlutterRouter>().navigate(
+                  MainScreenRoute(children: [
+                    ProfilePageRoute(userEmail: post.owner.email)
+                  ]),
+                );
+              }
+            },
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundImage:
+                      CachedNetworkImageProvider(post.owner.profilePicturePath),
                 ),
-              )
-            ],
+                const SizedBox(width: 5),
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        post.owner.nickName,
+                        style: TextStyles.text.copyWith(fontSize: 15),
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ),
           ),
         ),
-        const SizedBox(height: 10),
+
+        //!Picture
         Image(
           width: MediaQueryData.fromWindow(WidgetsBinding.instance.window)
               .size
@@ -61,6 +84,8 @@ class Post extends StatelessWidget {
               .toDouble(),
           image: CachedNetworkImageProvider(post.imagePath),
         ),
+
+        //!IconButtons (Like,Comment,Favorite)
         Padding(
           padding: const EdgeInsets.symmetric(
             vertical: 5,
@@ -68,6 +93,7 @@ class Post extends StatelessWidget {
           ),
           child: Row(
             children: [
+              //*Like button
               IconButton(
                 iconSize: 35,
                 splashRadius: 0.1,
@@ -84,12 +110,20 @@ class Post extends StatelessWidget {
                         color: Palette.notLikedPostLikeColor,
                       ),
               ),
+
+              //*Comment button
               IconButton(
                 iconSize: 35,
                 splashRadius: 0.1,
                 icon: const Icon(Icons.comment_outlined),
-                onPressed: () {},
+                onPressed: () {
+                  serverLocator<FlutterRouter>().push(
+                    CommentsPageRoute(post: post),
+                  );
+                },
               ),
+
+              //*Favorite button
               IconButton(
                 iconSize: 35,
                 splashRadius: 0.1,
@@ -111,8 +145,11 @@ class Post extends StatelessWidget {
             ],
           ),
         ),
+
+        //!Likes count
         if (post.likes != 0)
           GestureDetector(
+            behavior: HitTestBehavior.translucent,
             onTap: () {
               serverLocator<FlutterRouter>().push(
                 ListOfUsersRoute(
@@ -138,6 +175,8 @@ class Post extends StatelessWidget {
               ),
             ),
           ),
+
+        //!Description
         Padding(
           padding: const EdgeInsets.only(
             left: 20,
@@ -149,6 +188,7 @@ class Post extends StatelessWidget {
             child: Row(
               children: [
                 GestureDetector(
+                  behavior: HitTestBehavior.translucent,
                   onTap: () {
                     if (post.owner.email !=
                         FirebaseAuth.instance.currentUser!.email) {
@@ -159,11 +199,9 @@ class Post extends StatelessWidget {
                       );
                     } else {
                       serverLocator<FlutterRouter>().navigate(
-                        MainScreenRoute(
-                          children: [
-                            ProfilePageRoute(userEmail: post.owner.email)
-                          ],
-                        ),
+                        MainScreenRoute(children: [
+                          ProfilePageRoute(userEmail: post.owner.email)
+                        ]),
                       );
                     }
                   },
@@ -176,11 +214,10 @@ class Post extends StatelessWidget {
                   ),
                 ),
                 GestureDetector(
+                  behavior: HitTestBehavior.translucent,
                   onTap: () {
                     serverLocator<FlutterRouter>().push(
-                      CommentsPageRoute(
-                        post: post,
-                      ),
+                      CommentsPageRoute(post: post),
                     );
                   },
                   child: Text(
@@ -194,6 +231,8 @@ class Post extends StatelessWidget {
             ),
           ),
         ),
+
+        //!Date
         Padding(
           padding: const EdgeInsets.only(
             left: 20,
