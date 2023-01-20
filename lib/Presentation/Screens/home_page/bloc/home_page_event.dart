@@ -2,11 +2,15 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:intexgram/Domain/entities/person_entity.dart';
 import 'package:intexgram/Domain/entities/post_entity.dart';
 
+import 'home_page_state.dart';
+
 part 'home_page_event.freezed.dart';
 
 @freezed
 class HomePageEvent with _$HomePageEvent {
-  const factory HomePageEvent.loadUser() = LoadUser;
+  const factory HomePageEvent.loadUser(
+    HomePageState state,
+  ) = LoadUser;
 
   const factory HomePageEvent.loadGallery(
     PersonEntity user,

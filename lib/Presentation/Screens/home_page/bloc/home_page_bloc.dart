@@ -35,7 +35,8 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
     on<HomePageEvent>(
       (event, emit) async {
         await event.when(
-          loadUser: () async => await _loadUser(
+          loadUser: (state) async => await _loadUser(
+            state,
             emit,
           ),
           loadGallery: (user) async => await _loadGallery(
@@ -94,14 +95,16 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
             following,
             emit,
           ),
-          update: ((posts, following) async =>
-              emit.call(GalleryReady(posts, following))),
+          update: (posts, following) async =>
+              emit.call(GalleryReady(posts, following)),
         );
       },
     );
+    add(const LoadUser(Initial()));
   }
 
   FutureOr<void> _loadUser(
+    HomePageState state,
     Emitter<HomePageState> emit,
   ) async {
     var failureOrPerson = await getCurrentPerson(
@@ -111,10 +114,14 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
       ),
     );
 
-    failureOrPerson.fold(
+    await failureOrPerson.fold(
       (l) => null,
-      (user) {
-        emit(Ready(user));
+      (user) async {
+        if (state is GalleryReady) {
+          await _loadGallery(user, emit);
+        } else {
+          emit(Ready(user));
+        }
       },
     );
   }
