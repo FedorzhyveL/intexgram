@@ -6,6 +6,7 @@ import 'package:intexgram/Presentation/theme/palette.dart';
 import 'package:intexgram/Presentation/theme/text_styles.dart';
 import 'package:intexgram/locator_service.dart';
 
+import '../../../Domain/entities/post_entity.dart';
 import 'bloc/favorites_event.dart';
 import 'bloc/favorites_state.dart';
 
@@ -34,86 +35,84 @@ class _FavoritesPageState extends State<FavoritesPage> {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => bloc..add(const Load()),
-      child: BlocBuilder<FavoritesBloc, FavoritesState>(
+      child: BlocConsumer<FavoritesBloc, FavoritesState>(
+        listener: (context, state) {
+          if (state is Updated) bloc.add(Update(state.posts));
+        },
         builder: (context, state) {
-          return state.when(
-            initial: (() => content(state)),
-            loaded: ((posts) => content(state)),
-            updated: ((posts) {
-              bloc.add(Update(posts));
-              return content(state);
-            }),
+          return Scaffold(
+            appBar: AppBar(
+              backgroundColor: Palette.appBarColor,
+              centerTitle: true,
+              title: const Text(
+                'Favorites',
+                style: TextStyles.appBarText,
+              ),
+            ),
+            body: RefreshIndicator(
+              onRefresh: () {
+                final refreshBloc = bloc.stream.first;
+                bloc.add(const Load());
+                return refreshBloc;
+              },
+              child: state.when(
+                initial: () => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+                loaded: (posts) => content(posts),
+                updated: (posts) => content(posts),
+              ),
+            ),
           );
         },
       ),
     );
   }
 
-  Widget content(FavoritesState state) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Palette.appBarColor,
-        centerTitle: true,
-        title: const Text(
-          'Favorites',
-          style: TextStyles.appBarText,
-        ),
-      ),
-      body: RefreshIndicator(
-        onRefresh: (() {
-          final refreshBloc = bloc.stream.first;
-          bloc.add(const Load());
-          return refreshBloc;
-        }),
-        child: state is Loaded
-            ? ListView.builder(
-                itemCount: state.posts.length,
-                itemBuilder: (context, index) {
-                  return Post(
-                    post: state.posts[index],
-                    addToFavorite: () {
-                      bloc.add(
-                        AddToFavorite(
-                          state.posts,
-                          state.posts[index],
-                          index,
-                        ),
-                      );
-                    },
-                    removeFromFavorite: () {
-                      bloc.add(
-                        RemoveFromFavorite(
-                          state.posts,
-                          state.posts[index],
-                          index,
-                        ),
-                      );
-                    },
-                    removeLike: () {
-                      bloc.add(
-                        RemoveLike(
-                          state.posts,
-                          state.posts[index],
-                          index,
-                        ),
-                      );
-                    },
-                    setLike: () {
-                      bloc.add(
-                        SetLike(
-                          state.posts,
-                          state.posts[index],
-                          index,
-                        ),
-                      );
-                    },
-                  );
-                },
-              )
-            : const Center(
-                child: CircularProgressIndicator(),
+  Widget content(List<PostEntity> posts) {
+    return ListView.builder(
+      itemCount: posts.length,
+      itemBuilder: (context, index) {
+        return Post(
+          post: posts[index],
+          addToFavorite: () {
+            bloc.add(
+              AddToFavorite(
+                posts,
+                posts[index],
+                index,
               ),
-      ),
+            );
+          },
+          removeFromFavorite: () {
+            bloc.add(
+              RemoveFromFavorite(
+                posts,
+                posts[index],
+                index,
+              ),
+            );
+          },
+          removeLike: () {
+            bloc.add(
+              RemoveLike(
+                posts,
+                posts[index],
+                index,
+              ),
+            );
+          },
+          setLike: () {
+            bloc.add(
+              SetLike(
+                posts,
+                posts[index],
+                index,
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

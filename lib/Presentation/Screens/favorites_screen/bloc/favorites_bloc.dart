@@ -75,7 +75,7 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
             index,
             emit,
           ),
-          update: ((posts) async => emit.call(Loaded(posts: posts))),
+          update: (posts) async => emit.call(Loaded(posts: posts)),
         );
       },
     );
