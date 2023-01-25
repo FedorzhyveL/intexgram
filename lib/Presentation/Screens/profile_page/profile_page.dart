@@ -1,5 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intexgram/Domain/entities/person_entity.dart';
@@ -48,17 +47,21 @@ class _ProfilePageState extends State<ProfilePage>
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => bloc,
-      child: BlocBuilder<ProfilePageBloc, ProfilePageState>(
+      child: BlocConsumer<ProfilePageBloc, ProfilePageState>(
+        listener: (context, state) {
+          if (state is Ready) {
+            if (state.posts.length != state.user.posts) {
+              bloc.add(LoadMore(state));
+            }
+          }
+        },
         builder: (context, state) {
           return state.when(
-            initial: ((userEmail) {
-              bloc.add(Load(userEmail));
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }),
-            ready: ((user, currentUserEmail, posts, isFollowing) =>
-                profilePage(user, state)),
+            initial: (userEmail) => profilePage(state),
+            ready: (user, currentUserEmail, posts, isFollowing) =>
+                profilePage(state),
+            loading: (user, currentUserEmail, posts, isFollowing) =>
+                profilePage(state),
           );
         },
       ),
@@ -66,7 +69,6 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   Widget profilePage(
-    PersonEntity user,
     ProfilePageState state,
   ) {
     return Scaffold(
@@ -74,22 +76,22 @@ class _ProfilePageState extends State<ProfilePage>
         backgroundColor: Palette.appBarColor,
         automaticallyImplyLeading: false,
         leadingWidth: 30,
-        leading: user.email != FirebaseAuth.instance.currentUser!.email
-            ? IconButton(
-                icon: const Icon(
-                  Icons.arrow_back_rounded,
-                  size: 30,
-                ),
-                color: Palette.appBarIconColor,
-                onPressed: () {
-                  serverLocator<FlutterRouter>().pop();
-                },
-              )
-            : null,
+        leading: state.when(
+          initial: (userEmail) => null,
+          ready: (user, currentUserEmail, posts, isFollowing) =>
+              _leadingIcon(user.email, currentUserEmail),
+          loading: (user, currentUserEmail, posts, isFollowing) =>
+              _leadingIcon(user.email, currentUserEmail),
+        ),
         titleSpacing: 0,
         title: ListTile(
           title: Text(
-            user.nickName.toString(),
+            state.when(
+                initial: (userEmail) => "nick name",
+                ready: (user, currentUserEmail, posts, isFollowing) =>
+                    user.nickName,
+                loading: (user, currentUserEmail, posts, isFollowing) =>
+                    user.nickName),
             style: TextStyles.appBarText.copyWith(
               fontSize: 20,
             ),
@@ -99,37 +101,25 @@ class _ProfilePageState extends State<ProfilePage>
           Padding(
             padding: const EdgeInsets.only(right: 10),
             child: Row(
-              children: user.email == FirebaseAuth.instance.currentUser!.email
-                  ? [
-                      IconButton(
-                        icon: const Icon(
-                          Icons.add_box_outlined,
-                          size: 35,
-                        ),
-                        color: Palette.appBarIconColor,
-                        onPressed: () {},
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(
-                          Icons.menu_rounded,
-                          size: 35,
-                        ),
-                        color: Palette.appBarIconColor,
-                      ),
-                    ]
-                  : [
-                      IconButton(
-                        icon: const Icon(Icons.notifications_none_rounded),
-                        color: Palette.appBarIconColor,
-                        onPressed: () {},
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.more_vert),
-                        color: Palette.appBarIconColor,
-                      ),
-                    ],
+              children: state.when(
+                initial: (userEmail) => [
+                  Container(
+                    width: 35,
+                    height: 35,
+                    color: Colors.grey,
+                  ),
+                  const SizedBox(width: 10),
+                  Container(
+                    width: 35,
+                    height: 35,
+                    color: Colors.grey,
+                  ),
+                ],
+                ready: (user, currentUserEmail, posts, isFollowing) =>
+                    actions(user.email, currentUserEmail),
+                loading: (user, currentUserEmail, posts, isFollowing) =>
+                    actions(user.email, currentUserEmail),
+              ),
             ),
           ),
         ],
@@ -142,7 +132,7 @@ class _ProfilePageState extends State<ProfilePage>
               SliverList(
                 delegate: SliverChildListDelegate(
                   [
-                    profileHeaderWidget(user, state),
+                    profileHeaderWidget(state),
                   ],
                 ),
               ),
@@ -180,10 +170,20 @@ class _ProfilePageState extends State<ProfilePage>
               Expanded(
                 child: TabBarView(
                   controller: tabController,
-                  children: [
-                    gallery(state, user),
-                    gallery(state, user),
-                  ],
+                  children: state.when(
+                    initial: (userEmail) => [
+                      Container(),
+                      Container(),
+                    ],
+                    ready: (user, currentUserEmail, posts, isFollowing) => [
+                      gallery(state, user),
+                      gallery(state, user),
+                    ],
+                    loading: (user, currentUserEmail, posts, isFollowing) => [
+                      gallery(state, user),
+                      gallery(state, user),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -193,8 +193,56 @@ class _ProfilePageState extends State<ProfilePage>
     );
   }
 
+  List<Widget> actions(String userEmail, String currentUserEmail) {
+    return userEmail == currentUserEmail
+        ? [
+            IconButton(
+              icon: const Icon(
+                Icons.add_box_outlined,
+                size: 35,
+              ),
+              color: Palette.appBarIconColor,
+              onPressed: () {},
+            ),
+            IconButton(
+              onPressed: () {},
+              icon: const Icon(
+                Icons.menu_rounded,
+                size: 35,
+              ),
+              color: Palette.appBarIconColor,
+            ),
+          ]
+        : [
+            IconButton(
+              icon: const Icon(Icons.notifications_none_rounded),
+              color: Palette.appBarIconColor,
+              onPressed: () {},
+            ),
+            IconButton(
+              onPressed: () {},
+              icon: const Icon(Icons.more_vert),
+              color: Palette.appBarIconColor,
+            ),
+          ];
+  }
+
+  IconButton? _leadingIcon(String userEmail, String currentUserEmail) {
+    return userEmail != currentUserEmail
+        ? IconButton(
+            icon: const Icon(
+              Icons.arrow_back_rounded,
+              size: 30,
+            ),
+            color: Palette.appBarIconColor,
+            onPressed: () {
+              serverLocator<FlutterRouter>().pop();
+            },
+          )
+        : null;
+  }
+
   Widget profileHeaderWidget(
-    PersonEntity user,
     ProfilePageState state,
   ) {
     return SizedBox(
@@ -216,8 +264,15 @@ class _ProfilePageState extends State<ProfilePage>
                 children: [
                   CircleAvatar(
                     radius: 40,
-                    backgroundImage:
-                        CachedNetworkImageProvider(user.profilePicturePath),
+                    backgroundColor: Colors.transparent,
+                    backgroundImage: state.when(
+                      initial: (userEmail) => const AssetImage(
+                          'assets/photos/default_profile_image.png'),
+                      ready: (user, currentUserEmail, posts, isFollowing) =>
+                          CachedNetworkImageProvider(user.profilePicturePath),
+                      loading: (user, currentUserEmail, posts, isFollowing) =>
+                          CachedNetworkImageProvider(user.profilePicturePath),
+                    ),
                   ),
                   profileData(state),
                 ],
@@ -227,7 +282,13 @@ class _ProfilePageState extends State<ProfilePage>
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 5),
               child: Text(
-                user.userName.toString(),
+                state.when(
+                  initial: (userEmail) => "user name",
+                  ready: (user, currentUserEmail, posts, isFollowing) =>
+                      user.userName,
+                  loading: (user, currentUserEmail, posts, isFollowing) =>
+                      user.userName,
+                ),
                 style: TextStyles.text.copyWith(
                   fontWeight: FontWeight.w500,
                   fontSize: 15,
@@ -236,11 +297,23 @@ class _ProfilePageState extends State<ProfilePage>
             ),
             const SizedBox(height: 4),
             Visibility(
-              visible: user.description == '' ? false : true,
+              visible: state.when(
+                initial: (userEmail) => false,
+                ready: (user, currentUserEmail, posts, isFollowing) =>
+                    user.description == '' ? false : true,
+                loading: (user, currentUserEmail, posts, isFollowing) =>
+                    user.description == '' ? false : true,
+              ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 5),
                 child: Text(
-                  user.description == null ? '' : user.description!,
+                  state.when(
+                    initial: (userEmail) => '',
+                    ready: (user, currentUserEmail, posts, isFollowing) =>
+                        user.description == null ? '' : user.description!,
+                    loading: (user, currentUserEmail, posts, isFollowing) =>
+                        user.description == null ? '' : user.description!,
+                  ),
                   style: TextStyles.text.copyWith(
                     fontSize: 15,
                   ),
@@ -254,27 +327,36 @@ class _ProfilePageState extends State<ProfilePage>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   ProfileButton(
-                    isVisible:
-                        user.email == FirebaseAuth.instance.currentUser!.email
-                            ? true
-                            : false,
+                    isVisible: state.when(
+                      initial: (userEmail) => false,
+                      ready: (user, currentUserEmail, posts, isFollowing) =>
+                          user.email == currentUserEmail ? true : false,
+                      loading: (user, currentUserEmail, posts, isFollowing) =>
+                          user.email == currentUserEmail ? true : false,
+                    ),
                     onPressed: () async {
-                      var isChanged = await serverLocator<FlutterRouter>().push(
-                        ProfileInformationRoute(user: user),
+                      state.when(
+                        initial: (userEmail) {},
+                        ready: (user, currentUserEmail, posts,
+                                isFollowing) async =>
+                            await editProfileButtonAction(state, user),
+                        loading: (user, currentUserEmail, posts,
+                                isFollowing) async =>
+                            await editProfileButtonAction(state, user),
                       );
-                      if (isChanged == true) {
-                        bloc.add(Load(user.email));
-                      }
                     },
                     label: 'Edit profile',
                     backgroundColor: Palette.profileButtonDefautColor,
                     foregroundColor: Palette.textColor,
                   ),
                   ProfileButton(
-                    isVisible:
-                        user.email == FirebaseAuth.instance.currentUser!.email
-                            ? false
-                            : true,
+                    isVisible: state.when(
+                      initial: (userEmail) => false,
+                      ready: (user, currentUserEmail, posts, isFollowing) =>
+                          user.email == currentUserEmail ? false : true,
+                      loading: (user, currentUserEmail, posts, isFollowing) =>
+                          user.email == currentUserEmail ? false : true,
+                    ),
                     onPressed: () {
                       state is Ready
                           ? state.isFollowing == true
@@ -350,6 +432,18 @@ class _ProfilePageState extends State<ProfilePage>
         ),
       ),
     );
+  }
+
+  Future<void> editProfileButtonAction(
+    ProfilePageState state,
+    PersonEntity user,
+  ) async {
+    var isChanged = await serverLocator<FlutterRouter>().push(
+      ProfileInformationRoute(user: user),
+    );
+    if (isChanged == true) {
+      bloc.add(Load(state));
+    }
   }
 
   Widget hilitedStories() {
@@ -462,39 +556,82 @@ class _ProfilePageState extends State<ProfilePage>
       return RefreshIndicator(
         onRefresh: () {
           Future refreshBloc = bloc.stream.first;
-          bloc.add(
-            Load(state.user.email),
-          );
+          bloc.add(Load(state));
           return refreshBloc;
         },
-        child: GridView.builder(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            childAspectRatio: 1,
-            crossAxisSpacing: 2.5,
-            mainAxisSpacing: 2.5,
-          ),
-          itemCount: state.posts.length,
-          itemBuilder: (BuildContext context, int index) {
-            return GestureDetector(
-              child: FittedBox(
-                clipBehavior: Clip.hardEdge,
-                fit: BoxFit.cover,
-                child: Image(
-                  image:
-                      CachedNetworkImageProvider(state.posts[index].imagePath),
+        child: CustomScrollView(
+          slivers: [
+            SliverGrid(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                childAspectRatio: 1,
+                crossAxisSpacing: 2.5,
+                mainAxisSpacing: 2.5,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                childCount: state.posts.length,
+                (context, index) {
+                  return GestureDetector(
+                    child: FittedBox(
+                      clipBehavior: Clip.hardEdge,
+                      fit: BoxFit.cover,
+                      child: Image(
+                        image: CachedNetworkImageProvider(
+                            state.posts[index].imagePath),
+                      ),
+                    ),
+                    onTap: () {
+                      serverLocator<FlutterRouter>().push(
+                        UserListOfPostsRoute(
+                          posts: state.posts,
+                          position: index.toDouble(),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+            if (state.posts.isEmpty && state.user.posts != 0)
+              SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  childAspectRatio: 1,
+                  crossAxisSpacing: 2.5,
+                  mainAxisSpacing: 2.5,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  childCount: 15,
+                  (context, index) {
+                    return FittedBox(
+                      clipBehavior: Clip.hardEdge,
+                      fit: BoxFit.cover,
+                      child: AnimatedContainer(
+                        width: 200,
+                        height: 200,
+                        color: Colors.grey[300],
+                        duration: const Duration(seconds: 1),
+                        curve: Curves.linear,
+                      ),
+                    );
+                  },
                 ),
               ),
-              onTap: () {
-                serverLocator<FlutterRouter>().push(
-                  UserListOfPostsRoute(
-                    posts: state.posts,
-                    position: index.toDouble(),
-                  ),
-                );
-              },
-            );
-          },
+            if (state.posts.length != state.user.posts &&
+                state.posts.isNotEmpty)
+              SliverList(
+                delegate: SliverChildListDelegate(
+                  [
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: CircularProgressIndicator(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
         ),
       );
     } else {

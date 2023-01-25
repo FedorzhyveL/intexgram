@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -23,7 +22,6 @@ class ProfilePageBloc extends Bloc<ProfilePageEvent, ProfilePageState> {
   final GetPostUseCase getPost;
   final SubscribeUseCase subscribe;
   final UnSubscribeUseCase unSubscribe;
-  final String userEmail;
 
   ProfilePageBloc(
     this.getCurrentPerson,
@@ -32,27 +30,36 @@ class ProfilePageBloc extends Bloc<ProfilePageEvent, ProfilePageState> {
     this.getUserPosts,
     this.subscribe,
     this.unSubscribe,
-    this.userEmail,
+    String userEmail,
   ) : super(Initial(userEmail)) {
     on<ProfilePageEvent>(
       (event, emit) async {
         await event.when(
-          load: (user) async => await _load(user, emit),
+          load: (state) async => await _load(state, emit),
           subscribe: (user, currentUserEmail, posts, isSubscribed) async =>
               await _subscribe(
                   user, currentUserEmail, posts, isSubscribed, emit),
           unSubscribe: (user, currentUserEmail, posts, isSubscribed) async =>
               await _unSubscribe(
                   user, currentUserEmail, posts, isSubscribed, emit),
+          loadMore: (state) async => await loadMorePosts(state, emit),
         );
       },
     );
+    add(Load(Initial(userEmail)));
   }
 
   FutureOr<void> _load(
-    String userEmail,
+    ProfilePageState state,
     Emitter<ProfilePageState> emit,
   ) async {
+    late String userEmail;
+    state.when(
+      initial: (email) => userEmail = email,
+      ready: (user, currentUserEmail, posts, isFollowing) =>
+          userEmail = user.email,
+      loading: (user, currentUserEmail, posts, isFollowing) {},
+    );
     final failureOrPerson = await getCurrentPerson(
       GetCurrentPersonParams(
         email: userEmail,
@@ -66,27 +73,19 @@ class ProfilePageBloc extends Bloc<ProfilePageEvent, ProfilePageState> {
         if (userEmail != FirebaseAuth.instance.currentUser!.email) {
           subscription = await isSubscribed(userEmail);
         }
-
-        emit(
-          Ready(
-            user,
-            FirebaseAuth.instance.currentUser!.email!,
-            [],
-            subscription,
-          ),
-        );
-
         List<PostEntity> userPosts = [];
-        final listOrFailure =
-            await getUserPosts(GetUserPostsParams(email: user.email));
-        listOrFailure.fold((l) => null, (posts) => userPosts = posts);
-        emit(
-          Ready(
-            user,
-            FirebaseAuth.instance.currentUser!.email!,
-            userPosts,
-            subscription,
+        state.when(
+          initial: (userEmail) => emit(
+            Ready(
+              user,
+              FirebaseAuth.instance.currentUser!.email!,
+              [],
+              subscription,
+            ),
           ),
+          ready: (user, currentUserEmail, posts, isFollowing) =>
+              userPosts.addAll(posts),
+          loading: (user, currentUserEmail, posts, isFollowing) {},
         );
       },
     );
@@ -110,9 +109,7 @@ class ProfilePageBloc extends Bloc<ProfilePageEvent, ProfilePageState> {
     try {
       await subscribe(SubscribeParams(userEmail: user.email));
       emit(Ready(user, currentUserEmail, posts, true));
-    } catch (e) {
-      log(e.toString());
-    }
+    } catch (_) {}
   }
 
   _unSubscribe(
@@ -125,8 +122,29 @@ class ProfilePageBloc extends Bloc<ProfilePageEvent, ProfilePageState> {
     try {
       await unSubscribe(UnSubscribeParams(userEmail: user.email));
       emit(Ready(user, currentUserEmail, posts, false));
-    } catch (e) {
-      log(e.toString());
+    } catch (_) {}
+  }
+
+  Future<void> loadMorePosts(
+    ProfilePageState state,
+    Emitter<ProfilePageState> emit,
+  ) async {
+    if (state is Ready) {
+      List<PostEntity> posts = [];
+      posts.addAll(state.posts);
+
+      final listOrFailure = await getUserPosts(GetUserPostsParams(
+          email: state.user.email, limit: 9, startAt: state.posts.length));
+      listOrFailure.fold((l) => null, (postsList) => posts.addAll(postsList));
+
+      emit(
+        Ready(
+          state.user,
+          state.currentUserEmail,
+          posts,
+          state.isFollowing,
+        ),
+      );
     }
   }
 }

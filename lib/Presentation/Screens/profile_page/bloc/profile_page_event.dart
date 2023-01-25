@@ -2,14 +2,19 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:intexgram/Domain/entities/person_entity.dart';
 
 import '../../../../Domain/entities/post_entity.dart';
+import 'profile_page_state.dart';
 
 part 'profile_page_event.freezed.dart';
 
 @freezed
 class ProfilePageEvent with _$ProfilePageEvent {
   const factory ProfilePageEvent.load(
-    String userEmail,
+    ProfilePageState state,
   ) = Load;
+
+  const factory ProfilePageEvent.loadMore(
+    ProfilePageState state,
+  ) = LoadMore;
 
   const factory ProfilePageEvent.subscribe(
     PersonEntity user,

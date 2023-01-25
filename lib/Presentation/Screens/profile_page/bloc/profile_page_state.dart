@@ -17,4 +17,11 @@ class ProfilePageState with _$ProfilePageState {
     List<PostEntity> posts,
     bool? isFollowing,
   ) = Ready;
+
+  const factory ProfilePageState.loading(
+    PersonEntity user,
+    String currentUserEmail,
+    List<PostEntity> posts,
+    bool? isFollowing,
+  ) = Loading;
 }
