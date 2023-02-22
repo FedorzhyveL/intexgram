@@ -13,12 +13,14 @@ class ListOfUsersBloc extends Bloc<ListOfUsersEvent, ListOfUsersState> {
   final GetPersonsFromCollectionUseCase getPersonsFromCollection;
   final String docId;
   final String label;
+
   ListOfUsersBloc(
     this.getCurrentPerson,
     this.getPersonsFromCollection,
     this.docId,
     this.label,
   ) : super(Initial(docId, label)) {
+    add(LoadUsers(docId, label));
     on<ListOfUsersEvent>(
       (event, emit) async {
         await event.when(

@@ -7,7 +7,6 @@ import 'package:intexgram/Presentation/theme/palette.dart';
 import 'package:intexgram/Presentation/theme/text_styles.dart';
 import 'package:intexgram/locator_service.dart';
 
-import 'bloc/list_of_users_event.dart';
 import 'bloc/list_of_users_state.dart';
 
 class ListOfUsers extends StatefulWidget {
@@ -43,11 +42,10 @@ class _ListOfUsersState extends State<ListOfUsers> {
       child: BlocBuilder<ListOfUsersBloc, ListOfUsersState>(
         builder: (context, state) {
           return state.when(
-            initial: ((docId, label) {
-              bloc.add(LoadUsers(state.docId, state.label));
+            initial: (docId, label) {
               return content(state);
-            }),
-            loaded: ((docId, label, users) => content(state)),
+            },
+            loaded: (docId, label, users) => content(state),
           );
         },
       ),
