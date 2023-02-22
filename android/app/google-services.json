@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "104914610991",
+    "project_id": "intex-gram",
+    "storage_bucket": "intex-gram.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:104914610991:android:6844f1b419db7499b2cfda",
+        "android_client_info": {
+          "package_name": "com.example.intexgram"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "104914610991-issbptchrt3c6nnq11rrrodftts0k152.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAYhyz2QmJT5f4VNliWfFYq0AOgCEs3Z_o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "104914610991-issbptchrt3c6nnq11rrrodftts0k152.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

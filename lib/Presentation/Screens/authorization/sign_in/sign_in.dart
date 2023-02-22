@@ -1,0 +1,128 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intexgram/Presentation/Routes/router.gr.dart';
+import 'package:intexgram/Presentation/Screens/authorization/sign_in/bloc/sign_in_bloc.dart';
+import 'package:intexgram/Presentation/Screens/widgets/form_text_field.dart';
+import 'package:intexgram/Presentation/Screens/authorization/Widgets/or_divider.dart';
+import 'package:intexgram/Presentation/Screens/authorization/Widgets/sign_button.dart';
+import 'package:intexgram/Presentation/theme/palette.dart';
+import 'package:intexgram/Presentation/theme/text_styles.dart';
+import 'package:intexgram/locator_service.dart';
+
+import 'bloc/sign_in_event.dart';
+import 'bloc/sign_in_state.dart';
+
+class SignInPage extends StatefulWidget {
+  const SignInPage({super.key});
+
+  @override
+  State<SignInPage> createState() => _SignInPageState();
+}
+
+class _SignInPageState extends State<SignInPage> {
+  final _formKey = GlobalKey<FormState>();
+  var emailController = TextEditingController();
+  var passwordController = TextEditingController();
+
+  late final SignInBloc bloc;
+  @override
+  void initState() {
+    bloc = SignInBloc(
+      emailController,
+      passwordController,
+    );
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => bloc,
+      child: BlocConsumer<SignInBloc, SignInState>(
+        listener: (context, state) {
+          if (state is Succes) {
+            serverLocator<FlutterRouter>().replace(const MainScreenRoute());
+          }
+        },
+        builder: (context, state) {
+          return state.when(
+            initial: (emailController, passwordController) {
+              return Scaffold(
+                resizeToAvoidBottomInset: false,
+                body: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      formLabel(),
+                      logInForm(state),
+                      const OrDivider(),
+                      const SignButton(label: 'Sign up'),
+                    ],
+                  ),
+                ),
+              );
+            },
+            succes: () => Container(),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget formLabel() {
+    return Text(
+      "Intexgram",
+      style: TextStyles.text.copyWith(
+        fontStyle: FontStyle.italic,
+      ),
+    );
+  }
+
+  Widget logInForm(SignInState state) {
+    if (state is Initial) {
+      return Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            FormTextField(
+              label: 'Email',
+              controller: emailController,
+            ),
+            FormTextField(
+              label: 'Password',
+              controller: passwordController,
+              password: true,
+            ),
+            Container(
+              alignment: Alignment.centerRight,
+              margin: const EdgeInsets.only(right: 16),
+              child: TextButton(
+                onPressed: () {},
+                child: Text(
+                  'Forgot password?',
+                  style: TextStyles.text.copyWith(
+                    color: Palette.signTextColor,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+            ),
+            MaterialButton(
+              padding: const EdgeInsets.all(5),
+              color: Palette.signButtonColor,
+              child: const Text(
+                'Log in',
+                style: TextStyles.signButtonText,
+              ),
+              onPressed: () {
+                bloc.add(SignIn(state));
+              },
+            ),
+          ],
+        ),
+      );
+    } else {
+      return Container();
+    }
+  }
+}
