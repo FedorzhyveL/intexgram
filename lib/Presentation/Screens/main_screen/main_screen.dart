@@ -54,7 +54,7 @@ class _MainScreenState extends State<MainScreen> {
                     type: BottomNavigationBarType.fixed,
                     currentIndex: tabsRouter.activeIndex,
                     onTap: (value) async {
-                      if (value == 2) {
+                      if (value == 2 && cameraController.value.isInitialized) {
                         cameraController.resumePreview();
                       } else {
                         if (cameraController.value.isInitialized) {

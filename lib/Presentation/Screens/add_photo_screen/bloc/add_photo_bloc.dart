@@ -8,27 +8,22 @@ import 'add_photo_event.dart';
 import 'add_photo_state.dart';
 
 class AddPhotoBloc extends Bloc<AddPhotoEvent, AddPhotoState> {
-  AddPhotoBloc() : super(const Initial()) {
+  AddPhotoBloc(CameraController controller) : super(Initial(controller)) {
     on<AddPhotoEvent>(
       (event, emit) async {
         await event.when(
-          loadCameras: () async => await _loadCameras(
-            emit,
-          ),
+          initializeCameraController: (cameraController) async =>
+              await _loadCameras(cameraController, emit),
         );
       },
     );
+    add(InitializeCameraController(controller));
   }
 
   FutureOr<void> _loadCameras(
+    CameraController cameraController,
     Emitter<AddPhotoState> emit,
   ) async {
-    List<CameraDescription> cameras = await availableCameras();
-    CameraController cameraController = CameraController(
-      cameras.first,
-      ResolutionPreset.high,
-      enableAudio: false,
-    );
     try {
       await cameraController.initialize();
 

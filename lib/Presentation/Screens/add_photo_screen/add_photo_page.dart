@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intexgram/Presentation/Routes/router.gr.dart';
 import 'package:intexgram/Presentation/Screens/add_photo_screen/bloc/add_photo_bloc.dart';
 import 'package:intexgram/locator_service.dart';
@@ -24,7 +25,9 @@ class _AddPhotoState extends State<AddPhoto> {
   late CameraController cameraController;
   @override
   void initState() {
-    bloc = AddPhotoBloc();
+    cameraController =
+        (context.read<MainScreenBloc>().state as UserLoaded).cameraController;
+    bloc = AddPhotoBloc(cameraController);
     super.initState();
   }
 
@@ -41,69 +44,69 @@ class _AddPhotoState extends State<AddPhoto> {
       child: BlocBuilder<AddPhotoBloc, AddPhotoState>(
         builder: (context, state) {
           return state.when(
-            initial: () {
-              cameraController =
-                  (context.read<MainScreenBloc>().state as UserLoaded)
-                      .cameraController;
-              if (!cameraController.value.isInitialized) {
-                cameraController.initialize();
-              }
-              cameraController.resumePreview();
-              return SafeArea(
-                top: false,
-                bottom: false,
-                child: Scaffold(
-                  body: Column(
-                    children: [
-                      Expanded(child: CameraPreview(cameraController)),
-                    ],
-                  ),
-                  floatingActionButton: FloatingActionButton(
-                    onPressed: () async {
-                      try {
-                        final image = await cameraController.takePicture();
-
-                        if (!mounted) return;
-
-                        serverLocator<FlutterRouter>()
-                            .push(AddPostPageRoute(photo: File(image.path)));
-                      } catch (e) {
-                        log(e.toString());
-                      }
-                    },
-                  ),
-                ),
+            initial: (controller) {
+              return const Center(
+                child: Text("Camera not allowed. Change it in settings"),
               );
             },
             camerasReady: (controller) {
-              cameraController =
-                  (context.read<MainScreenBloc>().state as UserLoaded)
-                      .cameraController;
-              if (!cameraController.value.isInitialized) {
-                cameraController.initialize();
-              }
               return SafeArea(
-                top: false,
-                bottom: false,
                 child: Scaffold(
-                  body: Column(
+                  body: Stack(
                     children: [
-                      Expanded(child: CameraPreview(cameraController)),
+                      Positioned.fill(child: CameraPreview(cameraController)),
+                      Align(
+                        alignment: Alignment.bottomLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: IconButton(
+                            onPressed: () async {
+                              try {
+                                final image = await ImagePicker()
+                                    .pickImage(source: ImageSource.gallery);
+                                if (image != null) {
+                                  serverLocator<FlutterRouter>().push(
+                                      AddPostPageRoute(
+                                          photo: File(image.path)));
+                                }
+                              } catch (e) {
+                                log(e.toString());
+                              }
+                            },
+                            icon: const Icon(
+                              Icons.filter,
+                              size: 40,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Align(
+                        alignment: Alignment.bottomRight,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: IconButton(
+                            onPressed: () async {
+                              try {
+                                final image =
+                                    await cameraController.takePicture();
+
+                                if (!mounted) return;
+
+                                serverLocator<FlutterRouter>().push(
+                                  AddPostPageRoute(photo: File(image.path)),
+                                );
+                              } catch (e) {
+                                log(e.toString());
+                              }
+                            },
+                            icon: const Icon(
+                              Icons.photo_camera_outlined,
+                              size: 40,
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
-                  ),
-                  floatingActionButton: FloatingActionButton(
-                    onPressed: () async {
-                      try {
-                        final image = await cameraController.takePicture();
-
-                        if (!mounted) return;
-
-                        serverLocator<FlutterRouter>()
-                            .push(AddPostPageRoute(photo: File(image.path)));
-                      } catch (e) {
-                        log(e.toString());
-                      }
-                    },
                   ),
                 ),
               );
