@@ -103,7 +103,8 @@ class _AddPostPageState extends State<AddPostPage> {
             Row(
               children: [
                 const CircleAvatar(
-                  backgroundImage: AssetImage('assets/photos/original.jpg'),
+                  backgroundImage:
+                      AssetImage('assets/photos/default_profile_image.png'),
                   radius: 30,
                 ),
                 Expanded(
