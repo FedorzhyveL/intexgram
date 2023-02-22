@@ -9,7 +9,9 @@ abstract class PostRepository {
 
   Future<Either<Failure, List<PostEntity>>> getUserPosts(
     String email,
-  );
+    int limit, [
+    int startAt,
+  ]);
 
   Future<Either<Failure, List<PostEntity>>> getFavoritePosts(
     String email,

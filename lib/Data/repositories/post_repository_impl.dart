@@ -119,10 +119,15 @@ class PostRepositoryImpl extends PostRepository {
   }
 
   @override
-  Future<Either<Failure, List<PostEntity>>> getUserPosts(String email) async {
+  Future<Either<Failure, List<PostEntity>>> getUserPosts(
+    String email,
+    int limit, [
+    int startAt = 0,
+  ]) async {
     if (await networkInfo.isConnected) {
       try {
-        final result = await postRemoteDataSource.getUserPosts(email);
+        final result =
+            await postRemoteDataSource.getUserPosts(email, limit, startAt);
         return right(result);
       } on ServerException {
         left(ServerFailure());

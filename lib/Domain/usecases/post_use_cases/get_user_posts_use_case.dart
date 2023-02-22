@@ -14,15 +14,23 @@ class GetUserPostsUseCase
   Future<Either<Failure, List<PostEntity>>> call(
     GetUserPostsParams params,
   ) async {
-    return await postRepository.getUserPosts(params.email);
+    return await postRepository.getUserPosts(
+      params.email,
+      params.limit,
+      params.startAt,
+    );
   }
 }
 
 class GetUserPostsParams extends Equatable {
   final String email;
+  final int limit;
+  final int startAt;
 
   const GetUserPostsParams({
+    required this.limit,
     required this.email,
+    this.startAt = 0,
   });
   @override
   List<Object?> get props => [];

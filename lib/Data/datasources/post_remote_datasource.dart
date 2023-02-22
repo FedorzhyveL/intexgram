@@ -29,6 +29,8 @@ abstract class PostRemoteDataSource {
 
   Future<List<PostModel>> getUserPosts(
     String email,
+    int limit,
+    int startAt,
   );
 
   Future<PostEntity> removeFromFavorite(
@@ -238,7 +240,11 @@ class PostRemoteDataSourceImpl implements PostRemoteDataSource {
   }
 
   @override
-  Future<List<PostModel>> getUserPosts(String email) async {
+  Future<List<PostModel>> getUserPosts(
+    String email,
+    int limit,
+    int startAt,
+  ) async {
     List<PostModel> userPosts = [];
     await FirebaseFirestore.instance
         .collection("Users")
@@ -248,8 +254,12 @@ class PostRemoteDataSourceImpl implements PostRemoteDataSource {
         .get()
         .then(
       (value) async {
-        for (var postId in value.docs) {
-          userPosts.add(await getPost(postId.get("id")));
+        for (int i = startAt; i < startAt + limit; i++) {
+          if (i < value.size) {
+            userPosts.add(await getPost(value.docs[i].get("id")));
+          } else {
+            break;
+          }
         }
       },
     );

@@ -140,8 +140,8 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
       (following) async {
         followingList.addAll(following);
         for (var user in following) {
-          final userOrFailure =
-              await getUserPosts(GetUserPostsParams(email: user.email));
+          final userOrFailure = await getUserPosts(
+              GetUserPostsParams(email: user.email, limit: 3));
           userOrFailure.fold(
             (l) => null,
             (posts) => followingPosts.addAll(posts),
