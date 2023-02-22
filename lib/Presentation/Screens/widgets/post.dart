@@ -56,6 +56,7 @@ class Post extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 20,
+                  backgroundColor: Colors.transparent,
                   backgroundImage:
                       CachedNetworkImageProvider(post.owner.profilePicturePath),
                 ),

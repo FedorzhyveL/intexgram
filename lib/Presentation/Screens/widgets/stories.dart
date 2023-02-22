@@ -22,9 +22,11 @@ class Stories extends StatelessWidget {
         child: Column(
           children: [
             CircleAvatar(
+              backgroundColor: Colors.transparent,
               radius: 30,
               child: CircleAvatar(
                 radius: 30,
+                backgroundColor: Colors.transparent,
                 backgroundImage: CachedNetworkImageProvider(imagePath),
               ),
             ),
